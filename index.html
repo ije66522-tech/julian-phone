@@ -369,9 +369,18 @@ input[type=range]{accent-color:#007aff}
 </div>
 
 <script src="photos.js"></script>
+<script src="data.js"></script>
+<script>
+(function(){var L=localStorage,P=window.SITE_DATA||null;
+ try{var lp=JSON.parse(L.getItem('jp-pub')||'null');if(lp&&(!P||lp.v>P.v))P=lp}catch(e){}
+ window.SITE_DATA=P;window.PHOTOS_BASE=window.PHOTOS||{};
+ var ph=P&&P.PHOTOS?P.PHOTOS:window.PHOTOS;
+ try{var dr=JSON.parse(L.getItem('jp-draft')||'null');window.JP_DRAFT=dr;if(dr&&dr.PHOTOS)ph=dr.PHOTOS}catch(e){}
+ window.PHOTOS=ph||{};})();
+</script>
 <script>
 (()=>{
-try{const _sg='v9'+JSON.stringify(window.PHOTOS||{});if(localStorage.getItem('iphone18-jsc-ph')!==_sg){localStorage.removeItem('iphone18-jsc-v1');localStorage.setItem('iphone18-jsc-ph',_sg)}}catch(e){}
+try{const _sg='v9'+(window.SITE_DATA?window.SITE_DATA.v:'')+JSON.stringify(window.PHOTOS_BASE||{});if(localStorage.getItem('iphone18-jsc-ph')!==_sg){localStorage.removeItem('iphone18-jsc-v1');localStorage.setItem('iphone18-jsc-ph',_sg)}}catch(e){}
 /* ================= helpers ================= */
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const screen=$('#screen');
@@ -467,9 +476,14 @@ DEF.events[dkey(addDays(T0,1))]=[{t:'19:30',title:'Supper at the Albemarle',c:'#
 DEF.events[dkey(addDays(T0,2))]=[{t:'11:00',title:'Fitting — Ashby & Lowe',c:'#ff9500'}];
 DEF.events[dkey(addDays(T0,4))]=[{t:'13:00',title:'Granny\'s birthday lunch 🎂',c:'#ff3b30'}];
 const SDEF={wifi:true,cell:true,bt:true,air:false,focus:false,flash:false,rot:false,silent:false,vol:.5,bright:1,battery:82,wall:2,name:'Julian St. Clair'};
+if(window.SITE_DATA&&window.SITE_DATA.S&&window.SITE_DATA.S.name)SDEF.name=window.SITE_DATA.S.name;
 const saved=load();
 const S=Object.assign({},SDEF,saved&&saved.S);
-const D=Object.assign(JSON.parse(JSON.stringify(DEF)),saved&&saved.D);
+function siteBaseD(){const P=window.SITE_DATA;if(!P||!P.D)return null;const d=JSON.parse(JSON.stringify(P.D)),dt=Date.now()-(P.savedAt||Date.now());
+  const w=o=>{if(!o||typeof o!=='object')return;for(const k in o){const v=o[k];if(typeof v==='number'&&v>1.3e12&&v<2.3e12)o[k]=v+dt;else if(v&&typeof v==='object')w(v)}};w(d);
+  const dd=Math.round(dt/864e5);if(dd&&d.events){const ne={};for(const k in d.events){const m=k.match(/^(\d{4})-(\d{2})-(\d{2})$/);if(m){ne[dkey(addDays(new Date(+m[1],+m[2]-1,+m[3]),dd))]=d.events[k]}else ne[k]=d.events[k]}d.events=ne}
+  return Object.assign(JSON.parse(JSON.stringify(DEF)),d)}
+const D=Object.assign(siteBaseD()||JSON.parse(JSON.stringify(DEF)),saved&&saved.D);
 S.flash=false;
 const online=()=>S.wifi||(S.cell&&!S.air);
 const first=()=>S.name.split(' ')[0];
@@ -485,7 +499,10 @@ const PAL=[
 ];
 /* ================= photos (photos.js) ================= */
 const PHO=window.PHOTOS||{};
-const phu=p=>`url(${(/%[0-9a-f]{2}/i.test(p)?String(p):encodeURI(String(p))).replace(/[()'"]/g,c=>'%'+c.charCodeAt(0).toString(16))}) center/cover no-repeat`;
+const phuRaw=p=>`url(${(/%[0-9a-f]{2}/i.test(p)?String(p):encodeURI(String(p))).replace(/[()'"]/g,c=>'%'+c.charCodeAt(0).toString(16))}) center/cover no-repeat`;
+const phu=p=>{try{const c=sessionStorage.getItem('jp-img:'+p);if(c)return `url(${c}) center/cover no-repeat`}catch(e){}return phuRaw(p)};
+const CSRC=(window.JP_DRAFT&&window.JP_DRAFT.C)||(window.SITE_DATA&&window.SITE_DATA.C)||null;
+function ovr(name,arr){const c=CSRC&&CSRC[name];if(!Array.isArray(c))return;const orig=JSON.parse(JSON.stringify(arr));c.forEach((x,i)=>{if(x&&typeof x==='object'&&!Array.isArray(x)){const b=arr[i]&&typeof arr[i]==='object'?arr[i]:JSON.parse(JSON.stringify(orig[Math.min(i,orig.length-1)]||{}));arr[i]=Object.assign(b,x)}else arr[i]=JSON.parse(JSON.stringify(x))});arr.length=c.length}
 const phArr=k=>Array.isArray(PHO[k])?PHO[k].filter(Boolean):[];
 const phPick=(k,i)=>{const a=phArr(k);return a.length?phu(a[((i%a.length)+a.length)%a.length]):null};
 function scene(i){
@@ -579,6 +596,7 @@ const TRACKS=[
  {t:'Last Orders',a:'Harbour Kids',seed:31,bpm:160,dur:214,root:207.7}
 ];
 function mulberry(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+ovr('TRACKS',TRACKS);
 TRACKS.forEach((tr,i)=>{const r=mulberry(tr.seed),sc=[0,2,4,7,9,12,14,16];tr.mel=Array.from({length:32},()=>sc[Math.floor(r()*sc.length)]);tr.art=phPick('music',i)&&phArr('music')[i]?phu(phArr('music')[i]):scene(i*2+1)});
 const mus={on:false,i:0,pos:0,timer:null,step:0};
 function musPlay(i){if(i!==undefined&&i!==mus.i){mus.i=(i+TRACKS.length)%TRACKS.length;mus.pos=0;mus.step=0}mus.on=true;ac();clearInterval(mus.timer);const tr=TRACKS[mus.i];
@@ -1213,7 +1231,7 @@ function igLoggedOut(el){
 
 /* ================= SETLOG (shared timed photo logs) ================= */
 const SLCOL=['#16d3ef','#ff5ad9','#4be3a0','#ffd23f','#9b6bff','#ff7a45'];
-const SLCAPS=['EXIA, level 4','club lunch','Hyde Park run','tennis 🎾','Harrods errand','Earl Grey o\'clock','commute 😴','tea break ☕','ugh','lunch!!','gym 💪','desk life','stuck on the Tube','rain again ☔️','coffee no.3','home','cooking 🍝','📚','meeting…','vibes','pint o\'clock','walking the dog','bus 🚌','sunset tho'];
+const SLCAPS=['EXIA, level 4','club lunch','Hyde Park run','tennis 🎾','Harrods errand','Earl Grey o\'clock','commute 😴','tea break ☕','ugh','lunch!!','gym 💪','desk life','stuck on the Tube','rain again ☔️','coffee no.3','home','cooking 🍝','📚','meeting…','vibes','pint o\'clock','walking the dog','bus 🚌','sunset tho'];ovr('SLCAPS',SLCAPS);
 function smile(col,size=38,rot=0){return `<svg width="${size}" height="${size}" viewBox="0 0 40 40" style="transform:rotate(${rot}deg);display:block"><circle cx="20" cy="20" r="19" fill="${col}"/><ellipse cx="14" cy="16" rx="2.2" ry="3" fill="#111"/><ellipse cx="26" cy="16" rx="2.2" ry="3" fill="#111"/><path d="M11 24c3 5 15 5 18 0" fill="none" stroke="#111" stroke-width="2.4" stroke-linecap="round"/></svg>`}
 function slFakeMe(){const a=phArr('setlogMe');const f=slFake(0);if(a.length)f.bg=phu(rand(a));return f}
 function slFake(m){const _c=(D.contacts||[]).find(c=>c.id===m);const _a=_c&&(PHO.setlog||{})[_c.name];const _g=phArr('setlogAny');return{bg:Array.isArray(_a)&&_a.length?phu(rand(_a)):_g.length?phu(rand(_g)):scene(Math.floor(Math.random()*24)),cap:rand(SLCAPS),t:Date.now()-Math.random()*30*6e4,liked:false}}
@@ -1374,7 +1392,7 @@ function slSettings(el,r){const ems=['🥂','❤️','😍','🤍','🔥','✨',
 function slDMPick(el,r){const ov=slSheet(el,`<div style="font-size:20px;font-weight:700;margin-bottom:10px">Send a DM</div>${r.members.map(m=>`<div data-p="${m}" style="display:flex;gap:12px;align-items:center;padding:10px 0;cursor:pointer;border-bottom:.5px solid #333">${slAv(m,40)}<span style="font-size:17px">${esc(byId(m).name)}</span><span style="margin-left:auto;color:#777">›</span></div>`).join('')}`);
   $$('[data-p]',ov).forEach(n=>n.onclick=()=>{ov.remove();sl.view='chat';sl.chat='dm-'+n.dataset.p;sl.chatBack=sl.view==='room'?'room':'home';renderSetlog(el)})}
 const SLREP=['😂😂','where are you??','log it now!!','omg','that\'s so you','ha. classic Julian','come to the club later','🥂','miss you lot','bored at work tbh'];
-const SLCMT=['fighting!!','omg 😂','where is this??','so jealous','looks amazing','ha classic','miss you','lol same','need this rn','🥂🥂'];
+const SLCMT=['fighting!!','omg 😂','where is this??','so jealous','looks amazing','ha classic','miss you','lol same','need this rn','🥂🥂'];ovr('SLCMT',SLCMT);
 function slComment(rid,h,pm,m,text){
   const q=slPosts(rid,h)[pm];if(!q)return;q.cm=q.cm||[];const t=Date.now();q.cm.push({m,text,t});
   D.sl.chats=D.sl.chats||{};const key='room-'+rid;(D.sl.chats[key]=D.sl.chats[key]||[]).push({m,text,t,ref:{h,pm}});save();
@@ -1700,7 +1718,7 @@ function renderSafari(el,opts){
 }
 
 /* ================= YOUTUBE ================= */
-const YTV=[
+const YTV_BASE=[
  {t:'Verbier Off-Piste — First Tracks of the Season',ch:'Alpine Lines',v:'1.2M',d:'14:08',ago:'3 days ago',s:1},
  {t:'How a Bespoke Suit Is Actually Made (Start to Finish)',ch:'Cutter & Thread',v:'864K',d:'22:41',ago:'1 week ago',s:6},
  {t:'2,000m Rowing Test: Club Rower vs Olympian',ch:'Oarhouse',v:'2.3M',d:'11:57',ago:'2 weeks ago',s:4},
@@ -1712,9 +1730,10 @@ const YTV=[
  {t:'Why Old Money Never Wears Logos',ch:'The Kensington Edit',v:'2.0M',d:'12:44',ago:'2 months ago',s:11},
  {t:'Henley Regatta: Behind the Scenes',ch:'Oarhouse',v:'420K',d:'19:05',ago:'6 days ago',s:2}
 ];
-const YTC=['honestly the best video on this topic','the editing on this is unreal','watched this three times now','came here after the Verbier one 😂','that ending though','more of this please','underrated channel tbh','the sound design is so good','who else is watching this at 2am','this deserves way more views'];
+const YTC=['honestly the best video on this topic','the editing on this is unreal','watched this three times now','came here after the Verbier one 😂','that ending though','more of this please','underrated channel tbh','the sound design is so good','who else is watching this at 2am','this deserves way more views'];ovr('YTC',YTC);
 const YTCU=['@harrietb','@tomwhittaker','@skiaddict92','@ldnlad','@georgiep','@rowingnerd','@millie.k','@jaspr'];
-(PHO.ytVideos||[]).filter(x=>x&&x.img).reverse().forEach(x=>YTV.unshift({t:x.title||'',ch:x.ch||'',v:x.views||'100K',d:x.d||'3:24',ago:x.ago||'1 day ago',s:0,img:x.img}));
+ovr('YTV',YTV_BASE);
+const YTV=[...(PHO.ytVideos||[]).filter(x=>x&&x.img).map(x=>({t:x.title||'',ch:x.ch||'',v:x.views||'100K',d:x.d||'3:24',ago:x.ago||'1 day ago',s:0,img:x.img})),...YTV_BASE];
 const ytBg=v=>v.img?phu(v.img):scene(v.s);
 const durS=d=>d.split(':').reduce((a,x)=>a*60+ +x,0);
 const fmtT=s=>{s=Math.floor(s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return h?`${h}:${pad(m)}:${pad(x)}`:`${m}:${pad(x)}`};
@@ -2498,6 +2517,7 @@ const NEWS=[
  ['The best new cafés in east London, ranked','Food & Drink','Our writers spent a fortnight drinking flat whites so you don\'t have to. Here are the openings worth the queue.','Highlights include a canal-side spot with excellent pastries and a tiny counter serving single-origin filter coffee.'],
  ['How to actually fix your sleep schedule','Health','Struggling to get up on dark winter mornings? Small, consistent changes make the biggest difference.','Experts suggest a fixed wake-up time, daylight within an hour of waking and keeping screens out of bed.']
 ];
+ovr('NEWS',NEWS);
 let nwSel=null;
 function renderNews(el){
   if(nwSel!==null){const a=NEWS[nwSel];el.innerHTML=`<div class="top-pad"></div><div class="navbar"><span class="nb" data-a="back" style="color:#ff2d55">‹ Today</span><span></span><span class="nb r" style="color:#ff2d55">⬆︎</span></div><div class="body"><div style="height:220px;background:${scene(nwSel*4+2)}"></div><div style="padding:18px"><div style="color:#ff2d55;font-size:13px;font-weight:700;text-transform:uppercase">${a[1]}</div><h1 style="font-size:28px;line-height:1.2;margin:8px 0 14px;font-family:Georgia,serif">${a[0]}</h1><div style="font-size:13px;color:#8e8e93;margin-bottom:14px">${hm()} · Sample article</div><p style="font-size:18px;line-height:1.6;margin-bottom:14px;font-family:Georgia,serif">${a[2]}</p><p style="font-size:18px;line-height:1.6;font-family:Georgia,serif">${a[3]}</p></div></div>`;bind(el,{back:()=>{nwSel=null;renderNews(el)}});return}
@@ -2883,6 +2903,253 @@ let lastMin=-1;
 setInterval(()=>{const d=now();if(d.getMinutes()!==lastMin){lastMin=d.getMinutes();renderSB();checkAlarms();if(locked){const t=$('.lk-time');t&&(t.textContent=hm(d))}if(!current&&!locked)renderHome();if(current==='clock'&&clk.tab==='world')rerender('clock')}},1000);
 setInterval(()=>{S.battery=Math.max(5,S.battery-1);renderSB();save()},120000);
 document.addEventListener('pointerdown',()=>ac(),{once:true});
+
+/* ================= ADMIN (관리자 모드) ================= */
+const ADM={open:false,tab:'photo',unlocked:false,busy:false,dirtyPhotos:false};
+const AL=localStorage;
+const admGet=k=>{try{return JSON.parse(AL.getItem(k)||'null')}catch(e){return null}};
+const admSet=(k,v)=>{try{AL.setItem(k,JSON.stringify(v))}catch(e){admToast('브라우저 저장공간이 부족해요')}};
+function ghCfg(){const c=admGet('jp-gh')||{};const h=location.hostname.match(/^([^.]+)\.github\.io$/i);const seg=location.pathname.split('/').filter(Boolean)[0];
+  return{token:c.token||'',owner:c.owner||(h?h[1]:'ije66522-tech'),repo:c.repo||(h&&seg&&!/\.html?$/.test(seg)?seg:'julian-phone'),branch:c.branch||'main'}}
+const b64u=s=>btoa(unescape(encodeURIComponent(s)));
+async function gh(method,path,body){const c=ghCfg();if(!c.token)throw new Error('깃허브 토큰이 없어요. [설정] 탭에서 먼저 넣어주세요.');
+  const url=`https://api.github.com/repos/${c.owner}/${c.repo}/contents/${path.split('/').map(encodeURIComponent).join('/')}`+(method==='GET'?`?ref=${c.branch}&t=${Date.now()}`:'');
+  const r=await fetch(url,{method,headers:{Authorization:'Bearer '+c.token,Accept:'application/vnd.github+json'},body:body?JSON.stringify(body):undefined,cache:'no-store'});
+  if(r.status===404&&method==='GET')return null;
+  if(!r.ok){let m='';try{m=(await r.json()).message}catch(e){}throw new Error(r.status===401?'토큰이 틀렸거나 만료됐어요 (401)':r.status===403?'토큰 권한이 부족해요 (403) — Contents: Read and write 필요':r.status===404?'저장소를 못 찾았어요 (404) — 아이디/저장소 이름 확인':r.status+' '+m)}
+  return r.json()}
+async function ghPut(path,b64,msg){const c=ghCfg();const cur=await gh('GET',path);return gh('PUT',path,{message:msg,content:b64,branch:c.branch,sha:cur?cur.sha:undefined})}
+async function sha256(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+
+/* ---------- 현재 사진 설정 (초안) ---------- */
+const admPhotos=()=>{const d=window.JP_DRAFT||{};if(!d.PHOTOS)d.PHOTOS=JSON.parse(JSON.stringify(window.PHOTOS||{}));window.JP_DRAFT=d;return d.PHOTOS};
+const admC=()=>{const d=window.JP_DRAFT||{};window.JP_DRAFT=d;return d};
+function admSaveDraft(photosChanged){admSet('jp-draft',window.JP_DRAFT);if(photosChanged){ADM.dirtyPhotos=true;admRender()}}
+
+/* ---------- 내용(콘텐츠) 배열 ---------- */
+const CONTENT={YTV:{label:'유튜브 영상 목록',arr:()=>YTV_BASE,keys:['t','ch','v','d','ago']},TRACKS:{label:'음악 곡 목록',arr:()=>TRACKS,keys:['t','a']},NEWS:{label:'뉴스 기사 [제목, 분류, 요약, 본문]',arr:()=>NEWS},
+  SLCAPS:{label:'셋로그 사진 캡션 (랜덤)',arr:()=>SLCAPS},SLCMT:{label:'셋로그 댓글 (랜덤)',arr:()=>SLCMT},YTC:{label:'유튜브 댓글 (랜덤)',arr:()=>YTC}};
+function admContentSnap(){const o={};for(const k in CONTENT){const c=CONTENT[k];o[k]=c.arr().map(x=>c.keys&&x&&typeof x==='object'?Object.fromEntries(c.keys.filter(q=>q in x).map(q=>[q,x[q]]).concat(x.img?[['img',x.img]]:[]).concat(x.s!==undefined&&k==='YTV'?[['s',x.s]]:[])):x)}return o}
+function admContentChanged(){const d=admC();d.C=admContentSnap();admSaveDraft(false)}
+
+/* ---------- 스냅샷 & 배포 ---------- */
+function admSnapshot(){const d=JSON.parse(JSON.stringify(D));delete d.shots;
+  return{v:Date.now(),savedAt:Date.now(),S:{name:S.name},D:d,PHOTOS:admPhotos(),C:admContentSnap(),adminHash:(window.SITE_DATA&&window.SITE_DATA.adminHash)||admGet('jp-key-hash')}}
+async function admPublish(){if(ADM.busy)return;ADM.busy=true;admStatus('깃허브에 저장 중…');
+  try{const snap=admSnapshot();const js='/* 관리자 모드에서 자동 생성된 파일 — 직접 고치지 마세요 */\nwindow.SITE_DATA='+JSON.stringify(snap)+';\n';
+    await ghPut('data.js',b64u(js),'관리자 모드: 내용 저장');
+    admSet('jp-pub',snap);AL.removeItem('jp-draft');window.JP_DRAFT={PHOTOS:snap.PHOTOS};
+    try{AL.setItem('iphone18-jsc-ph','v9'+snap.v+JSON.stringify(window.PHOTOS_BASE||{}))}catch(e){}
+    window.SITE_DATA=snap;admStatus('저장 완료! 1~2분 뒤 사이트에 반영돼요 ✓',true)}
+  catch(e){admStatus('실패: '+e.message,false,true)}ADM.busy=false}
+
+/* ---------- 이미지 업로드 (자르기 포함) ---------- */
+const IMGCACHE='jp-img:';
+function admCacheImg(path,data){try{sessionStorage.setItem(IMGCACHE+path,data)}catch(e){}}
+async function admUpload(file,ratio){const data=await admCrop(file,ratio);if(!data)return null;
+  admStatus('사진 올리는 중…');const name='img/up/'+Date.now().toString(36)+Math.random().toString(36).slice(2,5)+'.jpg';
+  await ghPut(name,data.split(',')[1],'관리자 모드: 사진 추가');admCacheImg(name,data);admStatus('사진 올림 ✓',true);return name}
+function admPick(multi){return new Promise(res=>{const i=document.createElement('input');i.type='file';i.accept='image/*';i.multiple=!!multi;i.onchange=()=>res([...i.files]);i.click()})}
+function admCrop(file,ratio){return new Promise(res=>{const url=URL.createObjectURL(file);const img=new Image();img.onload=()=>{
+  const ov=document.createElement('div');ov.id='admCrop';
+  const R=[['원본',0],['1:1',1],['4:5',4/5],['3:4',3/4],['9:16',9/16],['16:9',16/9]];let rt=ratio===undefined?0:ratio;
+  ov.innerHTML=`<div class="ac-box"><div class="ac-h"><b>사진 자르기</b><span style="opacity:.6;font-size:12px">드래그로 위치 · 슬라이더/휠로 확대</span></div>
+   <div class="ac-stage"><canvas></canvas></div>
+   <div class="ac-r">${R.map(r=>`<button data-r="${r[1]}">${r[0]}</button>`).join('')}</div>
+   <input type="range" min="1" max="4" step="0.01" value="1" class="ac-z">
+   <div class="ac-b"><button data-x="cancel">취소</button><button data-x="ok" class="pri">자르고 올리기</button></div></div>`;
+  document.body.appendChild(ov);
+  const cv=ov.querySelector('canvas'),cx=cv.getContext('2d'),W=Math.min(560,innerWidth-40),Hh=Math.min(460,innerHeight-260);cv.width=W*2;cv.height=Hh*2;cv.style.width=W+'px';cv.style.height=Hh+'px';
+  let z=1,ox=0,oy=0;
+  const frame=()=>{const r=rt||img.width/img.height;let fw=W*.86,fh=fw/r;if(fh>Hh*.86){fh=Hh*.86;fw=fh*r}return{fw,fh,fx:(W-fw)/2,fy:(Hh-fh)/2}};
+  const base=()=>{const f=frame();return Math.max(f.fw/img.width,f.fh/img.height)};
+  const clamp=()=>{const f=frame(),s=base()*z,iw=img.width*s,ih=img.height*s;ox=Math.min(f.fx,Math.max(f.fx+f.fw-iw,ox));oy=Math.min(f.fy,Math.max(f.fy+f.fh-ih,oy))};
+  const center=()=>{const f=frame(),s=base()*z;ox=f.fx+(f.fw-img.width*s)/2;oy=f.fy+(f.fh-img.height*s)/2};
+  const draw=()=>{clamp();const f=frame(),s=base()*z;cx.setTransform(2,0,0,2,0,0);cx.fillStyle='#111';cx.fillRect(0,0,W,Hh);cx.drawImage(img,ox,oy,img.width*s,img.height*s);
+    cx.fillStyle='rgba(0,0,0,.55)';cx.beginPath();cx.rect(0,0,W,Hh);cx.rect(f.fx+f.fw,f.fy,-f.fw,f.fh);cx.fill('evenodd');cx.strokeStyle='#fff';cx.lineWidth=1.5;cx.strokeRect(f.fx,f.fy,f.fw,f.fh);
+    cx.strokeStyle='rgba(255,255,255,.35)';cx.lineWidth=.7;for(let k=1;k<3;k++){cx.beginPath();cx.moveTo(f.fx+f.fw*k/3,f.fy);cx.lineTo(f.fx+f.fw*k/3,f.fy+f.fh);cx.moveTo(f.fx,f.fy+f.fh*k/3);cx.lineTo(f.fx+f.fw,f.fy+f.fh*k/3);cx.stroke()}
+    ov.querySelectorAll('[data-r]').forEach(b=>b.classList.toggle('on',+b.dataset.r===rt))};
+  const zr=ov.querySelector('.ac-z');const setZ=nz=>{const f=frame(),cxp=f.fx+f.fw/2,cyp=f.fy+f.fh/2,s0=base()*z;nz=Math.max(1,Math.min(4,nz));const s1=base()*nz;ox=cxp-(cxp-ox)*s1/s0;oy=cyp-(cyp-oy)*s1/s0;z=nz;zr.value=z;draw()};
+  center();draw();
+  zr.oninput=()=>setZ(+zr.value);cv.onwheel=e=>{e.preventDefault();setZ(z*(e.deltaY<0?1.08:1/1.08))};
+  let dr=null;cv.onpointerdown=e=>{dr={x:e.clientX,y:e.clientY,ox,oy};cv.setPointerCapture(e.pointerId)};cv.onpointermove=e=>{if(!dr)return;ox=dr.ox+e.clientX-dr.x;oy=dr.oy+e.clientY-dr.y;draw()};cv.onpointerup=()=>dr=null;
+  ov.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{rt=+b.dataset.r;z=1;zr.value=1;center();draw()});
+  const done=v=>{ov.remove();URL.revokeObjectURL(url);res(v)};
+  ov.querySelector('[data-x="cancel"]').onclick=()=>done(null);
+  ov.querySelector('[data-x="ok"]').onclick=()=>{const f=frame(),s=base()*z;const sx=(f.fx-ox)/s,sy=(f.fy-oy)/s,sw=f.fw/s,sh=f.fh/s;const M=1600,k=Math.min(1,M/Math.max(sw,sh));
+    const o=document.createElement('canvas');o.width=Math.round(sw*k);o.height=Math.round(sh*k);o.getContext('2d').drawImage(img,sx,sy,sw,sh,0,0,o.width,o.height);done(o.toDataURL('image/jpeg',.86))};
+ };img.onerror=()=>{admToast('사진을 못 열었어요');res(null)};img.src=url})}
+
+/* ---------- UI ---------- */
+function admCSS(){if($('#admStyle'))return;const st=document.createElement('style');st.id='admStyle';st.textContent=`
+#adm{position:fixed;top:0;right:0;bottom:0;width:min(460px,100vw);background:#f6f6f8;color:#111;z-index:99999;display:flex;flex-direction:column;font:14px/1.4 -apple-system,system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;box-shadow:-8px 0 40px rgba(0,0,0,.35)}
+#adm *{box-sizing:border-box}#adm button{font:inherit;border:0;border-radius:8px;padding:7px 11px;background:#e7e7ec;color:#111;cursor:pointer}#adm button.pri{background:#0a84ff;color:#fff}#adm button.red{background:#ffe5e5;color:#d70015}
+#adm .ah{flex:none;display:flex;align-items:center;gap:8px;padding:14px 14px 10px;background:#fff;border-bottom:1px solid #e3e3e8}#adm .ah b{font-size:17px;flex:1}
+#adm .at{flex:none;display:flex;gap:4px;padding:8px 10px;background:#fff;border-bottom:1px solid #e3e3e8}#adm .at span{flex:1;text-align:center;padding:7px 0;border-radius:8px;cursor:pointer;font-weight:600;color:#666}#adm .at span.on{background:#111;color:#fff}
+#adm .ab{flex:1;overflow-y:auto;padding:12px}#adm .af{flex:none;padding:10px 12px 14px;background:#fff;border-top:1px solid #e3e3e8;display:flex;flex-direction:column;gap:6px}
+#adm .sec{background:#fff;border-radius:12px;margin-bottom:10px;overflow:hidden}#adm .sec>.sh{display:flex;align-items:center;gap:8px;padding:11px 12px;font-weight:700;cursor:pointer}#adm .sec>.sh small{font-weight:400;color:#888;flex:1}
+#adm .sb{padding:0 12px 12px}#adm .slot{display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid #f0f0f3}#adm .th{width:54px;height:54px;border-radius:8px;background:#ddd center/cover;flex:none;border:1px solid #e3e3e8}
+#adm .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}#adm .gi{position:relative;aspect-ratio:1;border-radius:8px;background:#ddd center/cover;border:1px solid #e3e3e8}
+#adm .gi .x{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+#adm .gi .mv{position:absolute;left:3px;bottom:3px;display:flex;gap:3px}#adm .gi .mv span{width:20px;height:20px;border-radius:5px;background:rgba(0,0,0,.6);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+#adm .add{aspect-ratio:1;border-radius:8px;border:2px dashed #c7c7cc;display:flex;align-items:center;justify-content:center;font-size:26px;color:#999;cursor:pointer}
+#adm input[type=text],#adm input[type=password],#adm input[type=number],#adm input[type=datetime-local],#adm textarea{width:100%;font:inherit;border:1px solid #d8d8de;border-radius:8px;padding:7px 9px;background:#fff;color:#111}
+#adm textarea{resize:vertical;min-height:36px}#adm .lab{font-size:12px;color:#888;margin:8px 0 3px}
+#adm .nd{border-left:2px solid #e8e8ee;margin:4px 0 4px 2px;padding-left:9px}#adm .nh{display:flex;align-items:center;gap:6px;padding:6px 0;cursor:pointer}#adm .nh .nt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+#adm .nh .ic{font-size:12px;color:#999;width:12px}#adm .mini{padding:3px 7px!important;font-size:12px!important}
+#adm .st{font-size:13px;color:#666;min-height:18px}#adm .st.ok{color:#1a8e3a}#adm .st.err{color:#d70015}
+#adm .warn{background:#fff7e0;border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:13px}#adm .help{font-size:12.5px;color:#666;line-height:1.55}#adm .help b{color:#111}
+#admCrop{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100000;display:flex;align-items:center;justify-content:center;font:14px -apple-system,system-ui,'Malgun Gothic',sans-serif}
+#admCrop .ac-box{background:#1c1c1e;color:#fff;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px;max-width:96vw}#admCrop .ac-h{display:flex;justify-content:space-between;align-items:center;gap:10px}
+#admCrop canvas{display:block;border-radius:10px;touch-action:none;cursor:grab}#admCrop .ac-r{display:flex;gap:6px;flex-wrap:wrap}#admCrop button{font:inherit;border:0;border-radius:8px;padding:7px 12px;background:#3a3a3c;color:#fff;cursor:pointer}
+#admCrop button.on{background:#fff;color:#000}#admCrop button.pri{background:#0a84ff}#admCrop .ac-b{display:flex;justify-content:flex-end;gap:8px}#admCrop .ac-z{width:100%}
+#admToast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#111;color:#fff;padding:10px 16px;border-radius:10px;z-index:100001;font:14px system-ui,'Malgun Gothic',sans-serif}`;document.head.appendChild(st)}
+function admToast(t){const o=document.createElement('div');o.id='admToast';o.textContent=t;document.body.appendChild(o);setTimeout(()=>o.remove(),2200)}
+function admStatus(t,ok,err){const e=$('#adm .st');if(e){e.textContent=t;e.className='st'+(ok?' ok':'')+(err?' err':'')}}
+const ae=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const thumbCss=p=>p?phu(p).replace(/ center\/cover no-repeat$/,''):'none';
+
+async function admEnter(){admCSS();if(ADM.unlocked){admOpen();return}
+  const hash=(window.SITE_DATA&&window.SITE_DATA.adminHash)||admGet('jp-key-hash');
+  if(!hash){const k=prompt('관리자 키를 처음 만들어요.\n앞으로 쓸 관리자 키(비밀번호)를 입력하세요:');if(!k)return;const k2=prompt('한 번 더 입력하세요:');if(k!==k2){alert('두 번 입력한 키가 달라요.');return}
+    admSet('jp-key-hash',await sha256(k));ADM.unlocked=true;admOpen();return}
+  const k=prompt('관리자 키를 입력하세요');if(!k)return;if(await sha256(k)!==hash){alert('관리자 키가 틀렸어요.');return}
+  ADM.unlocked=true;admOpen()}
+function admOpen(){ADM.open=true;let p=$('#adm');if(!p){p=document.createElement('div');p.id='adm';document.body.appendChild(p)}admRender()}
+function admClose(){ADM.open=false;const p=$('#adm');p&&p.remove()}
+function admRefreshPhone(){save();try{if(current)rerender(current);else renderHome();renderLock()}catch(e){}}
+
+function admRender(){const p=$('#adm');if(!p)return;const sc=($('.ab',p)||{}).scrollTop||0;const c=ghCfg();
+  p.innerHTML=`<div class="ah"><b>관리자 모드</b><button class="mini" data-k="lock">잠그기</button><button class="mini" data-k="close">닫기 ✕</button></div>
+  <div class="at">${[['photo','사진'],['text','글'],['content','목록'],['set','설정']].map(t=>`<span data-tab="${t[0]}" class="${ADM.tab===t[0]?'on':''}">${t[1]}</span>`).join('')}</div>
+  <div class="ab">${!c.token?`<div class="warn">아직 깃허브 토큰이 없어요. <b>[설정]</b> 탭에서 넣어야 사진 올리기·저장이 돼요.</div>`:''}${ADM.dirtyPhotos?`<div class="warn">사진을 바꿨어요. <button class="mini pri" data-k="reload">새로고침해서 폰에 적용</button></div>`:''}<div id="admBody"></div></div>
+  <div class="af"><div class="st"></div><button class="pri" data-k="pub" style="padding:11px">깃허브에 저장 (사이트에 반영)</button></div>`;
+  $$('[data-tab]',p).forEach(n=>n.onclick=()=>{ADM.tab=n.dataset.tab;admRender()});
+  $$('[data-k]',p).forEach(n=>n.onclick=()=>({close:admClose,lock:()=>{ADM.unlocked=false;admClose()},pub:admPublish,reload:()=>location.reload()})[n.dataset.k]());
+  const B=$('#admBody',p);({photo:admPhotoTab,text:admTextTab,content:admContentTab,set:admSetTab})[ADM.tab](B);$('.ab',p).scrollTop=sc}
+
+/* ----- 사진 탭 ----- */
+function admPhotoTab(B){const P=admPhotos();ADM.openSec=ADM.openSec||{wall:1};
+  const names=['me',...D.contacts.map(c=>c.name.replace(/\s*\(.*\)$/,'')),...IGU];const uniq=[...new Set([...names,...Object.keys(P.avatars||{})])];
+  const secs=[
+   ['wall','배경화면','single',[['wallpaper','홈 화면'],['lock','잠금 화면 (비우면 홈과 같음)']],null,9/16],
+   ['av','프로필 사진','map1','avatars',uniq.map(n=>[n,n==='me'?'줄리안 본인 (me)':n]),1],
+   ['gal','사진 앱 (갤러리)','list','gallery',null,0],
+   ['igm','인스타 — 줄리안 게시물','list','igMine',null,4/5],
+   ['igp','인스타 — 피드 게시물 (번호별)','mapl','igPosts',(D.ig?D.ig.posts:[]).map(x=>[String(x.id),`${x.id}번 · ${x.u}`]),4/5],
+   ['igs','인스타 — 스토리','mapl','igStories',(D.ig?D.ig.stories:[]).map(x=>[x.u,x.u]),9/16],
+   ['slf','셋로그 — 친구 사진 (이름별)','mapl','setlog',D.contacts.map(c=>[c.name,c.name]),3/4],
+   ['slm','셋로그 — 줄리안 사진','list','setlogMe',null,3/4],
+   ['sla','셋로그 — 공용 사진','list','setlogAny',null,3/4],
+   ['pl','구글맵 장소 사진','mapl','places',PLACES.filter(x=>x.r).map(x=>[x.n,x.n]),4/3],
+   ['mu','음악 앨범 커버 (곡 순서)','list','music',null,1],
+   ['yt','유튜브 영상 (썸네일+정보)','yt','ytVideos',null,16/9],
+   ['pool','그 외 남은 자리 (공용)','list','pool',null,0]];
+  B.innerHTML=`<div class="help" style="margin-bottom:10px">사진을 누르면 <b>바꾸기</b>, ✕는 <b>빼기</b>, ◀▶는 <b>순서 바꾸기</b>. 올린 사진은 바로 깃허브 <b>img/up</b> 폴더에 저장돼요. 다 바꾼 뒤 아래 <b>[깃허브에 저장]</b>을 꼭 눌러야 다른 사람한테도 보여요.</div>`+secs.map(s=>`<div class="sec" data-s="${s[0]}"><div class="sh">${ADM.openSec[s[0]]?'▾':'▸'} ${s[1]}<small></small></div>${ADM.openSec[s[0]]?`<div class="sb" id="as-${s[0]}"></div>`:''}</div>`).join('');
+  $$('.sec>.sh',B).forEach(h=>h.onclick=()=>{const k=h.parentElement.dataset.s;ADM.openSec[k]=!ADM.openSec[k];admRender()});
+  const up=async(ratio,cb,multi)=>{try{const fs=await admPick(multi);for(const f of fs){const n=await admUpload(f,ratio);if(n)cb(n)}admSaveDraft(true)}catch(e){admStatus('실패: '+e.message,false,true)}};
+  const listUI=(arr,ratio,onChange)=>{const w=document.createElement('div');w.className='grid';
+    const draw=()=>{w.innerHTML=arr.map((x,i)=>`<div class="gi" style="background-image:${thumbCss(x)}" data-i="${i}"><span class="x" data-del="${i}">✕</span><span class="mv"><span data-mv="${i},-1">◀</span><span data-mv="${i},1">▶</span></span></div>`).join('')+`<div class="add">＋</div>`;
+      $$('[data-del]',w).forEach(n=>n.onclick=e=>{e.stopPropagation();if(!confirm('이 사진을 뺄까요?'))return;arr.splice(+n.dataset.del,1);onChange();draw()});
+      $$('[data-mv]',w).forEach(n=>n.onclick=e=>{e.stopPropagation();const[i,d]=n.dataset.mv.split(',').map(Number);const j=i+d;if(j<0||j>=arr.length)return;[arr[i],arr[j]]=[arr[j],arr[i]];onChange();draw()});
+      $$('.gi',w).forEach(n=>n.onclick=()=>up(ratio,v=>{arr[+n.dataset.i]=v;draw()}));
+      $('.add',w).onclick=()=>up(ratio,v=>{arr.push(v);onChange();draw()},true)};draw();return w};
+  const slotRow=(label,get,set,ratio)=>{const r=document.createElement('div');r.className='slot';const v=get();
+    r.innerHTML=`<div class="th" style="background-image:${thumbCss(v)}"></div><div style="flex:1;min-width:0"><div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ae(label)}</div><div style="font-size:11px;color:#999;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ae(v||'비어있음')}</div></div><button class="mini" data-u>바꾸기</button>${v?'<button class="mini red" data-d>빼기</button>':''}`;
+    $('[data-u]',r).onclick=()=>up(ratio,n=>{set(n);admRender()});const d=$('[data-d]',r);d&&(d.onclick=()=>{set('');admSaveDraft(true)});return r};
+  secs.forEach(s=>{const el=$('#as-'+s[0],B);if(!el)return;const[,,type,key,items,ratio]=s;
+    if(type==='single')key.forEach(([k,l])=>el.appendChild(slotRow(l,()=>P[k],v=>P[k]=v,ratio)));
+    else if(type==='map1'){P[key]=P[key]||{};items.forEach(([k,l])=>el.appendChild(slotRow(l,()=>P[key][k],v=>P[key][k]=v,ratio)))}
+    else if(type==='list'){if(!Array.isArray(P[key]))P[key]=[];P[key]=P[key].filter(Boolean);el.appendChild(listUI(P[key],ratio,()=>admSaveDraft(true)))}
+    else if(type==='mapl'){P[key]=P[key]||{};items.forEach(([k,l])=>{const h=document.createElement('div');h.className='lab';h.textContent=l;el.appendChild(h);if(!Array.isArray(P[key][k]))P[key][k]=[];P[key][k]=P[key][k].filter(Boolean);el.appendChild(listUI(P[key][k],ratio,()=>admSaveDraft(true)))})}
+    else if(type==='yt'){if(!Array.isArray(P[key]))P[key]=[];const arr=P[key];
+      arr.forEach((v,i)=>{const box=document.createElement('div');box.style.cssText='border-top:1px solid #f0f0f3;padding:8px 0';
+        box.appendChild(slotRow(v.title||'(제목 없음)',()=>v.img,n=>v.img=n,ratio));
+        [['title','제목'],['ch','채널'],['d','길이 (예: 3:24)'],['views','조회수 (예: 152K)'],['ago','올린 때 (예: 2 days ago)']].forEach(([f,l])=>{const lb=document.createElement('div');lb.className='lab';lb.textContent=l;const inp=document.createElement('input');inp.type='text';inp.value=v[f]||'';inp.oninput=()=>{v[f]=inp.value;admSaveDraft(false);ADM.dirtyPhotos=true};box.append(lb,inp)});
+        const del=document.createElement('button');del.className='mini red';del.style.marginTop='8px';del.textContent='이 영상 삭제';del.onclick=()=>{if(confirm('삭제할까요?')){arr.splice(i,1);admSaveDraft(true)}};box.appendChild(del);el.appendChild(box)});
+      const add=document.createElement('button');add.textContent='＋ 영상 추가';add.style.marginTop='8px';add.onclick=()=>up(ratio,n=>{arr.push({img:n,title:'새 영상',ch:'',d:'3:00',views:'10K',ago:'1 day ago'});admRender()});el.appendChild(add)}
+  })}
+
+/* ----- 글 탭: 데이터 편집기 ----- */
+const DLAB={contacts:'연락처',threads:'문자 (메시지)',recents:'최근 통화',events:'캘린더 일정',notes:'메모',rem:'미리 알림',mails:'메일 (Apple Mail)',gmail:'Gmail',wa:'왓츠앱',ig:'인스타그램',igdm:'인스타 DM',sl:'셋로그',logs:'기록',myposts:'줄리안이 올린 게시물',badges:'앱 배지 숫자',installed:'설치한 앱',wacalls:'왓츠앱 통화',chist:'크롬 기록',hk:'홈 앱'};
+const TSK=v=>typeof v==='number'&&v>1.3e12&&v<2.3e12;
+const pad2=n=>String(n).padStart(2,'0');
+const toLocal=t=>{const d=new Date(t);return`${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`};
+const cName=id=>{const c=D.contacts.find(x=>String(x.id)===String(id));return c?c.name:''};
+function itemTitle(v,k){if(v&&typeof v==='object'&&!Array.isArray(v)){for(const f of['name','title','subj','u','text','cap','t','from','n','q']){if(typeof v[f]==='string'&&v[f])return v[f]}if(v.msgs&&v.msgs.length)return v.msgs.at(-1).text||''}
+  if(Array.isArray(v))return `${v.length}개`;return ''}
+function admTextTab(B){ADM.exp=ADM.exp||{};
+  B.innerHTML=`<div class="help" style="margin-bottom:10px">폰 안의 모든 글을 여기서 고치고 지울 수 있어요. 고치면 폰에 <b>바로</b> 반영되고, 다 끝나면 아래 <b>[깃허브에 저장]</b>을 눌러요. 🗑 삭제 · ⧉ 복제(새로 추가) · ↑↓ 순서</div>
+   <div class="sec"><div class="sh">기본 정보</div><div class="sb"><div class="lab">폰 주인 이름</div><input type="text" id="admName" value="${ae(S.name)}"></div></div><div id="admTree"></div>`;
+  $('#admName',B).oninput=e=>{S.name=e.target.value;admRefreshPhone()};
+  const keys=Object.keys(D).filter(k=>k!=='shots'&&k!=='nextId').sort((a,b)=>((a in DLAB)?0:1)-((b in DLAB)?0:1));
+  const T=$('#admTree',B);keys.forEach(k=>T.appendChild(admNode(D,k,DLAB[k]?`${DLAB[k]}`:k,'D.'+k,0,true)))}
+function admNode(parent,key,label,path,depth,top){const v=parent[key];const w=document.createElement('div');
+  if(v!==null&&typeof v==='object'){const isA=Array.isArray(v);const open=!!ADM.exp[path];
+    w.className=top?'sec':'nd';const h=document.createElement('div');h.className=top?'sh':'nh';
+    const sub=isA?`${v.length}개`:itemTitle(v);
+    h.innerHTML=top?`${open?'▾':'▸'} ${ae(label)}<small>${ae(sub)}</small>`:`<span class="ic">${open?'▾':'▸'}</span><span class="nt">${ae(label)} <span style="font-weight:400;color:#888">${ae(sub)}</span></span>`;
+    if(!top&&Array.isArray(parent))h.appendChild(admItemBtns(parent,+key,path));
+    h.onclick=e=>{if(e.target.closest('button'))return;ADM.exp[path]=!open;admRender()};w.appendChild(h);
+    if(open){const b=document.createElement('div');if(top)b.className='sb';
+      const ks=isA?v.map((_,i)=>i):Object.keys(v).filter(k=>!(path.startsWith('C.')&&['mel','art','seed','bpm','dur','root','s','img'].includes(k)));
+      ks.forEach(k=>{const cv=v[k];let lb=isA?`${+k+1}. ${itemTitle(cv)||''}`:(DFIELD[k]||k);
+        if(!isA&&/^\d+$/.test(k)&&cName(k))lb=`${cName(k)} (${k})`;
+        b.appendChild(admNode(v,k,isA?`#${+k+1}`:lb,path+'.'+k,depth+1,false))});
+      if(isA){const add=document.createElement('button');add.className='mini';add.textContent='＋ 추가';add.style.margin='4px 0';add.onclick=()=>{v.push(admBlank(v));ADM.exp[path+'.'+(v.length-1)]=true;admRefreshPhone();admRender()};b.appendChild(add)}
+      w.appendChild(b)}
+    return w}
+  /* primitive */
+  w.className='nd';w.style.borderLeftColor='transparent';const lb=document.createElement('div');lb.className='lab';lb.style.display='flex';lb.style.alignItems='center';lb.style.gap='6px';
+  lb.innerHTML=`<span style="flex:1">${ae(Array.isArray(parent)?'#'+(+key+1):(DFIELD[key]||key))}</span>`;if(Array.isArray(parent))lb.appendChild(admItemBtns(parent,+key,path));w.appendChild(lb);
+  let inp;const commit=nv=>{parent[key]=nv;clearTimeout(ADM.st);ADM.st=setTimeout(admRefreshPhone,350)};
+  if(typeof v==='boolean'){inp=document.createElement('input');inp.type='checkbox';inp.checked=v;inp.onchange=()=>commit(inp.checked)}
+  else if(TSK(v)){inp=document.createElement('input');inp.type='datetime-local';inp.value=toLocal(v);inp.onchange=()=>{const t=new Date(inp.value).getTime();if(!isNaN(t))commit(t)}}
+  else if(typeof v==='number'){inp=document.createElement('input');inp.type='number';inp.value=v;inp.step='any';inp.oninput=()=>{if(inp.value!=='')commit(+inp.value)}}
+  else{inp=document.createElement('textarea');inp.value=v??'';inp.rows=Math.min(8,Math.max(1,Math.ceil(String(v??'').length/42)+String(v??'').split('\n').length-1));
+    if(String(v).length>3000||/^(data:|url\(|radial-gradient|linear-gradient)/.test(v)){inp=document.createElement('div');inp.style.cssText='font-size:12px;color:#999';inp.textContent='(사진 데이터 — 사진 탭에서 관리)'}
+    else inp.oninput=()=>commit(inp.value)}
+  w.appendChild(inp);return w}
+const DFIELD={name:'이름',phone:'전화번호',text:'내용',t:'시간',ts:'시간',me:'내가 보냄 (1=줄리안, 0=상대)',title:'제목',subj:'제목',body:'본문',from:'보낸 사람',addr:'주소',read:'읽음',cap:'캡션',u:'아이디',msgs:'메시지들',unread:'안 읽음 수',likes:'좋아요 수',bio:'소개',c:'색',type:'종류',emoji:'이모지',members:'멤버 (연락처 번호)',rooms:'방 목록',posts:'게시물',stories:'스토리',notes:'노트',followers:'팔로워',id:'번호'};
+function admItemBtns(arr,i,path){const s=document.createElement('span');s.style.cssText='display:flex;gap:3px;flex:none';
+  [['↑',()=>{if(i>0)[arr[i-1],arr[i]]=[arr[i],arr[i-1]]}],['↓',()=>{if(i<arr.length-1)[arr[i+1],arr[i]]=[arr[i],arr[i+1]]}],['⧉',()=>{const c=JSON.parse(JSON.stringify(arr[i]));if(c&&typeof c==='object'&&'id'in c&&typeof c.id==='number')c.id=Math.max(0,...arr.map(x=>+x.id||0))+1;arr.splice(i+1,0,c)}],['🗑',()=>{if(confirm('삭제할까요?'))arr.splice(i,1)}]]
+   .forEach(([t,f])=>{const b=document.createElement('button');b.className='mini'+(t==='🗑'?' red':'');b.textContent=t;b.onclick=e=>{e.stopPropagation();f();if(arr===D.contacts)D.nextId=Math.max(D.nextId||0,...D.contacts.map(c=>c.id+1));admRefreshPhone();admRender()};s.appendChild(b)});return s}
+function admBlank(arr){const last=arr[arr.length-1];if(last===undefined)return'';const c=JSON.parse(JSON.stringify(last));
+  const clr=o=>{for(const k in o){if(TSK(o[k]))o[k]=Date.now();else if(k==='id'&&typeof o[k]==='number')o[k]=Math.max(0,...arr.map(x=>+(x&&x.id)||0))+1;else if(typeof o[k]==='string'&&!['u','c','emoji','from','addr'].includes(k))o[k]='';else if(Array.isArray(o[k])&&['msgs','cm','cmt'].includes(k))o[k]=[]}};
+  if(c&&typeof c==='object')clr(c);else if(typeof c==='string')return'';else if(TSK(c))return Date.now();return c}
+
+/* ----- 목록 탭 (앱 안 고정 목록) ----- */
+function admContentTab(B){ADM.exp=ADM.exp||{};B.innerHTML=`<div class="help" style="margin-bottom:10px">유튜브 영상, 음악 곡 이름, 뉴스 기사, 랜덤 캡션·댓글처럼 앱에 고정된 목록이에요. 영상 썸네일은 [사진] 탭에서 바꿔요.</div><div id="admCT"></div>`;
+  const T=$('#admCT',B);const box={};for(const k in CONTENT)box[k]=CONTENT[k].arr();
+  const wrapRefresh=()=>{admContentChanged();admRefreshPhone()};
+  for(const k in CONTENT){const n=admNode(box,k,CONTENT[k].label,'C.'+k,0,true);T.appendChild(n)}
+  $$('textarea,input',T).forEach(i=>i.addEventListener('input',()=>{clearTimeout(ADM.ct);ADM.ct=setTimeout(admContentChanged,400)}));
+  $$('button',T).forEach(b=>b.addEventListener('click',()=>setTimeout(admContentChanged,0)))}
+
+/* ----- 설정 탭 ----- */
+function admSetTab(B){const c=ghCfg();
+  B.innerHTML=`<div class="sec"><div class="sh">깃허브 연결</div><div class="sb">
+   <div class="lab">깃허브 아이디</div><input type="text" id="gOw" value="${ae(c.owner)}">
+   <div class="lab">저장소 이름</div><input type="text" id="gRe" value="${ae(c.repo)}">
+   <div class="lab">브랜치</div><input type="text" id="gBr" value="${ae(c.branch)}">
+   <div class="lab">토큰 (이 브라우저에만 저장돼요)</div><input type="password" id="gTk" value="${ae(c.token)}" placeholder="github_pat_...">
+   <div style="display:flex;gap:6px;margin-top:10px"><button class="pri" id="gSave">저장</button><button id="gTest">연결 테스트</button></div></div></div>
+   <div class="sec"><div class="sh">토큰 만드는 법</div><div class="sb help">
+   1. 깃허브 오른쪽 위 프로필 → <b>Settings</b><br>2. 왼쪽 맨 아래 <b>Developer settings</b><br>3. <b>Personal access tokens → Fine-grained tokens → Generate new token</b><br>
+   4. 이름 아무거나, <b>Expiration</b>은 원하는 기간<br>5. <b>Repository access → Only select repositories → julian-phone</b><br>6. <b>Permissions → Repository permissions → Contents → Read and write</b><br>
+   7. 맨 아래 <b>Generate token</b> → 나온 <b>github_pat_…</b> 복사해서 위에 붙여넣기<br><br>⚠️ 토큰은 비밀번호랑 같아요. 남한테 보여주지 마세요. 이 브라우저에만 저장되고 깃허브 파일에는 안 올라가요.</div></div>
+   <div class="sec"><div class="sh">관리자 키</div><div class="sb"><div class="help">관리자 모드에 들어갈 때 쓰는 키예요. 바꾸면 [깃허브에 저장]을 눌러야 사이트에도 적용돼요.</div><button id="kCh" style="margin-top:8px">관리자 키 바꾸기</button></div></div>
+   <div class="sec"><div class="sh">되돌리기</div><div class="sb"><div class="help">저장 안 한 변경을 버리고 마지막으로 깃허브에 저장한 상태로 돌아가요.</div><button class="red" id="rRev" style="margin-top:8px">저장 안 한 변경 버리기</button></div></div>`;
+  $('#gSave',B).onclick=()=>{admSet('jp-gh',{owner:$('#gOw',B).value.trim(),repo:$('#gRe',B).value.trim(),branch:$('#gBr',B).value.trim()||'main',token:$('#gTk',B).value.trim()});admStatus('저장했어요 ✓',true);admRender()};
+  $('#gTest',B).onclick=async()=>{$('#gSave',B).click();admStatus('확인 중…');try{const r=await gh('GET','index.html');admStatus(r?'연결 성공! ✓':'저장소는 찾았는데 index.html이 없어요',!!r,!r)}catch(e){admStatus('실패: '+e.message,false,true)}};
+  $('#kCh',B).onclick=async()=>{const k=prompt('새 관리자 키');if(!k)return;if(prompt('한 번 더')!==k){alert('달라요');return}const h=await sha256(k);admSet('jp-key-hash',h);if(window.SITE_DATA)window.SITE_DATA.adminHash=h;admStatus('바꿨어요. [깃허브에 저장]을 눌러주세요',true)};
+  $('#rRev',B).onclick=()=>{if(!confirm('저장 안 한 변경을 모두 버릴까요?'))return;AL.removeItem('jp-draft');AL.removeItem(KEY);location.reload()}}
+
+/* ----- 들어가는 길: 상태바 시계 길게 누르기 / 주소 끝에 #admin / Ctrl+Shift+A ----- */
+(()=>{let t=null;const st=e=>{if(!e.target.closest('#sbTime,.lk-time'))return;t=setTimeout(()=>{t=null;admEnter()},1200)};const cl=()=>{clearTimeout(t);t=null};
+  document.addEventListener('pointerdown',st,true);document.addEventListener('pointerup',cl,true);document.addEventListener('pointercancel',cl,true);
+  addEventListener('keydown',e=>{if(e.ctrlKey&&e.shiftKey&&(e.key==='A'||e.key==='a')){e.preventDefault();admEnter()}});
+  const hk=()=>{if(location.hash==='#admin'){history.replaceState(null,'',location.pathname+location.search);setTimeout(admEnter,300)}};addEventListener('hashchange',hk);hk()})();
 
 /* ================= init ================= */
 applyWall();applyBright();renderSB();renderHome();renderLock();renderCC();updateSB();

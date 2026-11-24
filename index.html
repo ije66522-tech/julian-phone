@@ -1710,30 +1710,74 @@ const YTV=[
  {t:'Why Old Money Never Wears Logos',ch:'The Kensington Edit',v:'2.0M',d:'12:44',ago:'2 months ago',s:11},
  {t:'Henley Regatta: Behind the Scenes',ch:'Oarhouse',v:'420K',d:'19:05',ago:'6 days ago',s:2}
 ];
-const YTC=['honestly the best video on this topic','the editing on this is unreal','watched this three times now','came here after the Verbier one 😂','that ending though','more of this please','underrated channel tbh'];
+const YTC=['honestly the best video on this topic','the editing on this is unreal','watched this three times now','came here after the Verbier one 😂','that ending though','more of this please','underrated channel tbh','the sound design is so good','who else is watching this at 2am','this deserves way more views'];
+const YTCU=['@harrietb','@tomwhittaker','@skiaddict92','@ldnlad','@georgiep','@rowingnerd','@millie.k','@jaspr'];
 const durS=d=>d.split(':').reduce((a,x)=>a*60+ +x,0);
-let yt={tab:'home',v:null,pos:0,playing:false,t:null,subs:{'Oarhouse':1,'Alpine Lines':1},liked:{},q:'',searching:false,short:0,hist:[]};
+const fmtT=s=>{s=Math.floor(s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return h?`${h}:${pad(m)}:${pad(x)}`:`${m}:${pad(x)}`};
+let yt={tab:'home',v:null,pos:0,playing:false,t:null,subs:{'Oarhouse':1,'Alpine Lines':1},liked:{},q:'',searching:false,short:0,hist:[],cm:{},auto:true,cc:false,full:false};
+/* white line icons */
+const YP={
+ like:'<path d="M7 10.5V20H4a1 1 0 0 1-1-1v-7.5a1 1 0 0 1 1-1h3zm0 0 3.6-7.2a.6.6 0 0 1 .5-.3c1.6 0 2.9 1.4 2.6 3l-.6 3.5h5.3a2.2 2.2 0 0 1 2.1 2.7l-1.6 6.6A2.6 2.6 0 0 1 16.4 20H7"/>',
+ likeF:'<path fill="currentColor" stroke="none" d="M3 11.5a1 1 0 0 1 1-1h3V20H4a1 1 0 0 1-1-1zM8.5 20V10.2l3.2-6.6c.2-.4.6-.6 1-.6 1.5.2 2.4 1.6 2.1 3.1l-.5 3.4h4.6a2.2 2.2 0 0 1 2.1 2.7l-1.6 6.6A2.6 2.6 0 0 1 16.9 20z"/>',
+ share:'<path d="M13.5 5v3.6C7 9 4 13 3.5 19c2-3 4.8-4.5 10-4.5V18l7-6.5z"/>',
+ spark:'<path fill="currentColor" stroke="none" d="M12 2.5c.7 4.9 4.6 8.8 9.5 9.5-4.9.7-8.8 4.6-9.5 9.5-.7-4.9-4.6-8.8-9.5-9.5 4.9-.7 8.8-4.6 9.5-9.5z"/>',
+ more:'<circle cx="5" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.7" fill="currentColor" stroke="none"/>',
+ vmore:'<circle cx="12" cy="5" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.6" fill="currentColor" stroke="none"/>',
+ bell:'<path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.8 1.8H4.2zM10 20.5a2 2 0 0 0 4 0"/>',
+ bellF:'<path fill="currentColor" stroke="none" d="M12 3.5a6.5 6.5 0 0 0-6.5 6.5v6l-2 2.5h17l-2-2.5v-6A6.5 6.5 0 0 0 12 3.5zM9.8 20a2.2 2.2 0 0 0 4.4 0z"/>',
+ down:'<path d="m5 9 7 7 7-7"/>',
+ cast:'<path d="M3 8V6a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-6M3 12a7 7 0 0 1 7 7M3 15.5A3.5 3.5 0 0 1 6.5 19M3 19h.01"/>',
+ cc:'<rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M10.5 10.2a2.3 2.3 0 1 0 0 3.6M17.5 10.2a2.3 2.3 0 1 0 0 3.6"/>',
+ gear:'<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5l1.8 2.6 3.1-.6.6 3.1 2.6 1.8-1.4 2.6 1.4 2.6-2.6 1.8-.6 3.1-3.1-.6L12 21.5l-1.8-2.6-3.1.6-.6-3.1-2.6-1.8L5.3 12 3.9 9.4l2.6-1.8.6-3.1 3.1.6z"/>',
+ full:'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>',
+ unfull:'<path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/>',
+ prev:'<path fill="currentColor" stroke="none" d="M6 5h2.4v14H6zM20 5v14L9.5 12z"/>',
+ next:'<path fill="currentColor" stroke="none" d="M15.6 5H18v14h-2.4zM4 5v14l10.5-7z"/>',
+ play:'<path fill="currentColor" stroke="none" d="M7 4.5v15l13-7.5z"/>',
+ pause:'<rect fill="currentColor" stroke="none" x="6" y="4.5" width="4.2" height="15" rx="1.2"/><rect fill="currentColor" stroke="none" x="13.8" y="4.5" width="4.2" height="15" rx="1.2"/>',
+ search:'<circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/>',
+ back:'<path d="M20 12H4m6-6-6 6 6 6"/>',
+ home:'<path d="M4 10.5 12 4l8 6.5V20h-5v-6H9v6H4z"/>',
+ homeF:'<path fill="currentColor" stroke="none" d="M12 3.2 3.5 10v10.5H9.5v-6h5v6h6V10z"/>',
+ shorts:'<path d="M15.5 3.8 7.4 8.2a3.5 3.5 0 0 0 .8 6.5l-.6.3a3.5 3.5 0 0 0 3.3 6.2l8.1-4.4a3.5 3.5 0 0 0-.8-6.5l.6-.3a3.5 3.5 0 1 0-3.3-6.2z"/><path fill="currentColor" stroke="none" d="m10.3 9.4 4.7 2.6-4.7 2.6z"/>',
+ plus:'<circle cx="12" cy="12" r="9.5"/><path d="M12 7.5v9M7.5 12h9"/>',
+ subs:'<rect x="3" y="8" width="18" height="12" rx="2"/><path d="M6 5h12M8 2.5h8"/><path fill="currentColor" stroke="none" d="m10.3 11 4.7 3-4.7 3z"/>',
+ you:'<circle cx="12" cy="8.5" r="4"/><path d="M4 21c.8-4 4-6 8-6s7.2 2 8 6"/>',
+ tv:'<rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8"/>',
+ dl:'<path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/>',
+ clip:'<circle cx="6.5" cy="6.5" r="2.5"/><circle cx="6.5" cy="17.5" r="2.5"/><path d="M8.5 8 20 18M8.5 16 20 6"/>',
+ save:'<path d="M6 3.5h12v17l-6-4-6 4z"/>',
+ saveF:'<path fill="currentColor" stroke="none" d="M6 3.5h12v17l-6-4-6 4z"/>',
+ cmt:'<path d="M4 5h16v11H9l-5 4z"/>',
+ hist:'<path d="M3.5 12a8.5 8.5 0 1 0 2.5-6M3.5 4v4h4M12 8v4.5l3 2"/>',
+ later:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+ vids:'<rect x="3" y="5" width="18" height="14" rx="2"/><path fill="currentColor" stroke="none" d="m10 9 5 3-5 3z"/>',
+ send:'<path d="M3.5 20 21 12 3.5 4 6 12zM6 12h8"/>',
+ x:'<path d="M6 6l12 12M18 6 6 18"/>'
+};
+const yi=(n,s=24,w=1.8,extra='')=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" style="display:block;${extra}">${YP[n]}</svg>`;
+const YBG='#0f0f0f',YCH='#272727',YSUB='#aaa';
 function ytStop(){clearInterval(yt.t);if(yt.playing){yt.playing=false;musPause()}}
 function ytThumb(v,h=210){return `<div style="position:relative;height:${h}px;background:${scene(v.s)};background-size:cover"><span style="position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.8);color:#fff;font-size:12px;font-weight:600;border-radius:4px;padding:1px 5px">${v.d}</span></div>`}
-function ytCard(v){const i=YTV.indexOf(v);return `<div data-v="${i}" style="cursor:pointer;margin-bottom:14px">${ytThumb(v)}<div style="display:flex;gap:12px;padding:10px 12px 0">${avatar({name:v.ch,id:v.ch.length},36)}<div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500;line-height:1.3">${esc(v.t)}</div><div style="font-size:12px;color:#606060;margin-top:3px">${esc(v.ch)} · ${v.v} views · ${v.ago}</div></div><span style="color:#606060">⋮</span></div></div>`}
+function ytCard(v){const i=YTV.indexOf(v);return `<div data-v="${i}" style="cursor:pointer;margin-bottom:14px">${ytThumb(v)}<div style="display:flex;gap:12px;padding:10px 12px 0">${avatar({name:v.ch,id:v.ch.length},36)}<div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500;line-height:1.3">${esc(v.t)}</div><div style="font-size:12px;color:${YSUB};margin-top:3px">${esc(v.ch)} · ${v.v} views · ${v.ago}</div></div><span style="color:#fff;flex:none">${yi('vmore',18)}</span></div></div>`}
+function ytNav(active){return `<div style="flex:none;height:84px;padding-bottom:28px;display:flex;justify-content:space-around;align-items:center;border-top:1px solid #222;background:${YBG};color:#fff">${[['home','Home'],['shorts','Shorts'],['plus',''],['subs','Subscriptions'],['you','You']].map(t=>`<div data-tab="${t[0]}" style="display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;cursor:pointer;min-width:60px;${active===t[0]?'font-weight:700':''}">${yi(t[0]==='home'&&active==='home'?'homeF':t[0],t[0]==='plus'?34:24,t[0]==='plus'?1.4:1.8)}${t[2]===undefined?'':''}${t[1]}</div>`).join('')}</div>`}
 function renderYoutube(el){
-  el.style.background='#fff';el.style.color='#0f0f0f';
-  if(!online()){ytStop();el.innerHTML=`<div class="top-pad"></div><div class="empty" style="padding-top:200px"><div style="font-size:44px">📡</div><b style="color:#000;font-size:18px">No connection</b><br>Connect to the internet and try again.</div>`;return}
+  el.style.background=YBG;el.style.color='#fff';
+  if(!online()){ytStop();el.innerHTML=`<div class="top-pad"></div><div class="empty" style="padding-top:200px;color:${YSUB}"><b style="color:#fff;font-size:18px">No connection</b><br>Connect to the internet and try again.</div>`;return}
   if(yt.v!==null)return ytWatch(el);
   if(yt.tab==='shorts')return ytShorts(el);
   let body='';
   if(yt.searching){const q=yt.q.toLowerCase();const res=q?YTV.filter(v=>(v.t+v.ch).toLowerCase().includes(q)):[];
     body=`${(res.length?res:YTV.slice(0,4)).map(ytCard).join('')}`;
-    if(q&&!res.length)body=`<div style="padding:10px 14px;color:#606060;font-size:14px">No exact matches for "${esc(yt.q)}" — showing suggestions</div>`+body;}
-  else if(yt.tab==='home')body=`<div style="display:flex;gap:8px;padding:0 12px 12px;overflow-x:auto;scrollbar-width:none">${['All','Music','Travel','Tennis','Fashion','Live','Rowing','Cooking'].map((c,i)=>`<span style="flex:none;background:${i?'#f2f2f2':'#0f0f0f'};color:${i?'#0f0f0f':'#fff'};border-radius:8px;padding:6px 12px;font-size:14px;font-weight:500">${c}</span>`).join('')}</div>${YTV.slice(0,3).map(ytCard).join('')}
-    <div style="padding:6px 12px 10px;font-weight:700;font-size:18px"><svg width="1em" height="1em" viewBox="0 0 24 24" style="vertical-align:-.12em;fill:currentColor"><path d="M7 4.5v15l13-7.5z"/></svg> Shorts</div><div style="display:flex;gap:8px;padding:0 12px 16px;overflow-x:auto;scrollbar-width:none">${[0,1,2,3].map(i=>`<div data-sh="${i}" style="flex:none;width:170px;height:290px;border-radius:12px;background:${scene(i*5+3)};background-size:cover;position:relative;cursor:pointer"><div style="position:absolute;left:10px;right:10px;bottom:10px;color:#fff;font-size:14px;font-weight:600;text-shadow:0 1px 4px rgba(0,0,0,.6)">${['POV: Verbier at 8am','backhand fix in 10s','fitting day 🪡','Serpentine at dawn'][i]}<div style="font-size:12px;font-weight:400">${['2.1M','880K','430K','1.4M'][i]} views</div></div></div>`).join('')}</div>${YTV.slice(3).map(ytCard).join('')}`;
-  else if(yt.tab==='subs'){const chs=Object.keys(yt.subs).filter(k=>yt.subs[k]);body=`<div style="display:flex;gap:14px;padding:4px 12px 14px;overflow-x:auto;scrollbar-width:none">${chs.map(c=>`<div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;width:64px">${avatar({name:c,id:c.length},56)}${esc(c)}</div>`).join('')||'<div class="empty" style="padding:10px">Subscribe to channels to see them here</div>'}</div>${YTV.filter(v=>yt.subs[v.ch]).map(ytCard).join('')}`}
-  else if(yt.tab==='you'){body=`<div style="display:flex;gap:14px;align-items:center;padding:4px 14px 18px">${avatar({name:S.name,id:0},72)}<div><b style="font-size:22px">${esc(S.name)}</b><div style="font-size:13px;color:#606060">@${myIG().replace(/\./g,'')} · View channel ›</div></div></div>
+    if(q&&!res.length)body=`<div style="padding:10px 14px;color:${YSUB};font-size:14px">No exact matches for "${esc(yt.q)}" — showing suggestions</div>`+body;}
+  else if(yt.tab==='home')body=`<div style="display:flex;gap:8px;padding:0 12px 12px;overflow-x:auto;scrollbar-width:none">${['All','Music','Travel','Tennis','Fashion','Live','Rowing','Cooking'].map((c,i)=>`<span style="flex:none;background:${i?YCH:'#fff'};color:${i?'#fff':'#0f0f0f'};border-radius:8px;padding:6px 12px;font-size:14px;font-weight:500">${c}</span>`).join('')}</div>${YTV.slice(0,3).map(ytCard).join('')}
+    <div style="padding:6px 12px 10px;font-weight:700;font-size:18px;display:flex;align-items:center;gap:8px">${yi('shorts',22)} Shorts</div><div style="display:flex;gap:8px;padding:0 12px 16px;overflow-x:auto;scrollbar-width:none">${[0,1,2,3].map(i=>`<div data-sh="${i}" style="flex:none;width:170px;height:290px;border-radius:12px;background:${scene(i*5+3)};background-size:cover;position:relative;cursor:pointer"><div style="position:absolute;left:10px;right:10px;bottom:10px;color:#fff;font-size:14px;font-weight:600;text-shadow:0 1px 4px rgba(0,0,0,.6)">${['POV: Verbier at 8am','backhand fix in 10s','fitting day','Serpentine at dawn'][i]}<div style="font-size:12px;font-weight:400">${['2.1M','880K','430K','1.4M'][i]} views</div></div></div>`).join('')}</div>${YTV.slice(3).map(ytCard).join('')}`;
+  else if(yt.tab==='subs'){const chs=Object.keys(yt.subs).filter(k=>yt.subs[k]);body=`<div style="display:flex;gap:14px;padding:4px 12px 14px;overflow-x:auto;scrollbar-width:none">${chs.map(c=>`<div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;width:64px;text-align:center">${avatar({name:c,id:c.length},56)}${esc(c)}</div>`).join('')||`<div class="empty" style="padding:10px;color:${YSUB}">Subscribe to channels to see them here</div>`}</div>${YTV.filter(v=>yt.subs[v.ch]).map(ytCard).join('')}`}
+  else if(yt.tab==='you'){body=`<div style="display:flex;gap:14px;align-items:center;padding:4px 14px 18px">${avatar({name:S.name,id:0},72)}<div><b style="font-size:22px">${esc(S.name)}</b><div style="font-size:13px;color:${YSUB}">@${myIG().replace(/\./g,'')} · View channel ›</div></div></div>
     <div style="padding:0 14px 8px;font-weight:700;font-size:18px">History</div><div style="display:flex;gap:10px;padding:0 14px 18px;overflow-x:auto;scrollbar-width:none">${(yt.hist.length?yt.hist:[0,4,7]).map(i=>`<div data-v="${i}" style="flex:none;width:160px;cursor:pointer"><div style="height:90px;border-radius:10px;background:${scene(YTV[i].s)};background-size:cover"></div><div style="font-size:13px;margin-top:6px;line-height:1.3;height:34px;overflow:hidden">${esc(YTV[i].t)}</div></div>`).join('')}</div>
-    ${[['<svg width="1em" height="1em" viewBox="0 0 24 24" style="vertical-align:-.12em;fill:currentColor"><path d="M7 4.5v15l13-7.5z"/></svg>','Your videos'],['⬇','Downloads'],['🕘','Watch later'],['👍','Liked videos ('+Object.values(yt.liked).filter(Boolean).length+')'],['⚙︎','Settings']].map(r=>`<div style="display:flex;gap:18px;align-items:center;padding:14px 18px;font-size:16px"><span style="width:22px;text-align:center">${r[0]}</span>${r[1]}</div>`).join('')}`}
-  el.innerHTML=`<div class="top-pad"></div><div style="flex:none;display:flex;align-items:center;gap:10px;padding:4px 14px 10px">${yt.searching?`<span data-a="sx" style="font-size:22px;cursor:pointer">←</span><input id="ytQ" value="${esc(yt.q)}" placeholder="Search YouTube" style="flex:1;background:#f2f2f2;border:0;border-radius:20px;padding:9px 14px;font-size:16px;outline:none">`:`<b style="font-size:21px;letter-spacing:-.5px">YouTube</b><span style="margin-left:auto;display:flex;gap:20px;font-size:20px"><span>📺</span><span>🔔</span><span data-a="srch" style="cursor:pointer">🔍</span></span>`}</div>
-  <div class="body" id="ytB">${body}</div>
-  <div style="flex:none;height:84px;padding-bottom:28px;display:flex;justify-content:space-around;align-items:center;border-top:1px solid #eee;background:#fff">${[['home','⌂','Home'],['shorts','<svg width="1em" height="1em" viewBox="0 0 24 24" style="vertical-align:-.12em;fill:currentColor"><path d="M7 4.5v15l13-7.5z"/></svg>','Shorts'],['plus','⊕',''],['subs','▤','Subscriptions'],['you','◯','You']].map(t=>`<div data-tab="${t[0]}" style="display:flex;flex-direction:column;align-items:center;font-size:10px;cursor:pointer;min-width:60px;${yt.tab===t[0]?'font-weight:700':''}"><span style="font-size:${t[0]==='plus'?32:22}px;line-height:26px">${t[1]}</span>${t[2]}</div>`).join('')}</div>`;
+    ${[['vids','Your videos'],['dl','Downloads'],['later','Watch later'],['like','Liked videos ('+Object.values(yt.liked).filter(v=>v===1).length+')'],['gear','Settings']].map(r=>`<div style="display:flex;gap:18px;align-items:center;padding:14px 18px;font-size:16px">${yi(r[0],22)}${r[1]}</div>`).join('')}`}
+  el.innerHTML=`<div class="top-pad"></div><div style="flex:none;display:flex;align-items:center;gap:10px;padding:4px 14px 10px">${yt.searching?`<span data-a="sx" style="cursor:pointer">${yi('back',24)}</span><input id="ytQ" value="${esc(yt.q)}" placeholder="Search YouTube" style="flex:1;background:${YCH};color:#fff;border:0;border-radius:20px;padding:9px 14px;font-size:16px;outline:none">`:`<b style="font-size:21px;letter-spacing:-.5px">YouTube</b><span style="margin-left:auto;display:flex;gap:22px">${yi('cast',23)}${yi('bell',23)}<span data-a="srch" style="cursor:pointer">${yi('search',23)}</span></span>`}</div>
+  <div class="body" id="ytB">${body}</div>${ytNav(yt.tab)}`;
   const R=()=>renderYoutube(el);
   $$('[data-v]',el).forEach(n=>n.onclick=()=>{yt.v=+n.dataset.v;yt.pos=0;yt.playing=true;R()});
   $$('[data-sh]',el).forEach(n=>n.onclick=()=>{yt.tab='shorts';yt.short=+n.dataset.sh;R()});
@@ -1741,42 +1785,106 @@ function renderYoutube(el){
   const q=$('#ytQ',el);if(q){q.focus();q.onkeydown=e=>{if(e.key==='Enter'&&!e.isComposing){yt.q=q.value.trim();R()}}}
   bind(el,{srch:()=>{yt.searching=true;yt.q='';R()},sx:()=>{yt.searching=false;R()}});
 }
+function ytComments(i){if(!yt.cm[i]){const r=mulberry(i*7+3);yt.cm[i]=Array.from({length:6},(_,k)=>({u:YTCU[Math.floor(r()*YTCU.length)],t:YTC[(i+k*3)%YTC.length],ago:(k+1)*(1+Math.floor(r()*5))+'d ago',l:Math.floor(r()*900)+3,me:0,lk:false}))}return yt.cm[i]}
 function ytWatch(el){
   if(!YTV[yt.v]){yt.v=null;return renderYoutube(el)}
+  el.style.background=YBG;el.style.color='#fff';
   const v=YTV[yt.v],tot=durS(v.d);if(!yt.hist.includes(yt.v))yt.hist.unshift(yt.v);
-  const liked=yt.liked[yt.v]===1,disl=yt.liked[yt.v]===-1,subd=!!yt.subs[v.ch];
-  el.innerHTML=`<div class="top-pad" style="background:#000"></div>
-  <div id="ytP" style="flex:none;height:221px;position:relative;background:#000;overflow:hidden;cursor:pointer"><div style="position:absolute;inset:0;background:${scene(v.s)};background-size:cover;${yt.playing?'animation:drift 7s ease-in-out infinite alternate':''}"></div>
-   <div id="ytOv" style="position:absolute;inset:0;background:rgba(0,0,0,${yt.playing?0:.35});display:flex;align-items:center;justify-content:center;gap:50px;color:#fff;font-size:30px;transition:background .2s"><span data-y="b" style="opacity:${yt.playing?0:1}">⟲</span><span data-y="pp" style="font-size:44px;opacity:${yt.playing?0:1}" id="ytPP">${yt.playing?'<svg width="1em" height="1em" viewBox="0 0 24 24" style="vertical-align:-.12em;fill:currentColor"><rect x="6" y="4.5" width="4.2" height="15" rx="1.2"/><rect x="13.8" y="4.5" width="4.2" height="15" rx="1.2"/></svg>':'<svg width="1em" height="1em" viewBox="0 0 24 24" style="vertical-align:-.12em;fill:currentColor"><path d="M7 4.5v15l13-7.5z"/></svg>'}</span><span data-y="f" style="opacity:${yt.playing?0:1}">⟳</span></div>
-   <div style="position:absolute;left:0;right:0;bottom:0;padding:0 10px 4px;color:#fff;font-size:12px"><span id="ytTm">${fmtDur(yt.pos)} / ${v.d}</span><div style="height:3px;background:rgba(255,255,255,.3);margin-top:4px"><i id="ytBar" style="display:block;height:100%;background:#ff0033;width:${yt.pos/tot*100}%"></i></div></div>
-   <span data-a="min" style="position:absolute;top:8px;left:10px;color:#fff;font-size:22px">⌄</span></div>
-  <div class="body"><div style="padding:12px 14px 4px;font-size:18px;font-weight:600;line-height:1.3">${esc(v.t)}</div><div style="padding:0 14px 12px;font-size:12px;color:#606060">${v.v} views · ${v.ago} <b style="color:#0f0f0f">…more</b></div>
-   <div style="display:flex;align-items:center;gap:10px;padding:0 14px 12px">${avatar({name:v.ch,id:v.ch.length},38)}<div style="flex:1"><b style="font-size:15px">${esc(v.ch)}</b> <span style="font-size:12px;color:#606060">${(v.ch.length*37)%900+100}K</span></div><button data-a="sub" style="background:${subd?'#f2f2f2':'#0f0f0f'};color:${subd?'#0f0f0f':'#fff'};border-radius:20px;padding:8px 16px;font-size:14px;font-weight:600">${subd?'🔔 Subscribed':'Subscribe'}</button></div>
-   <div style="display:flex;gap:8px;padding:0 14px 14px;overflow-x:auto;scrollbar-width:none">${`<span data-a="like" style="flex:none;background:#f2f2f2;border-radius:18px;padding:7px 14px;font-size:14px;font-weight:500;cursor:pointer">${liked?'👍🏻':'👍'} ${(Math.round(parseFloat(v.v)*(v.v.includes('M')?42:0.042))+(liked?1:0))}K │ <span data-a="dis">${disl?'👎🏻':'👎'}</span></span>`}${['↗ Share','⬇ Download','✂ Clip','🔖 Save'].map(x=>`<span style="flex:none;background:#f2f2f2;border-radius:18px;padding:7px 14px;font-size:14px;font-weight:500">${x}</span>`).join('')}</div>
-   <div style="margin:0 14px 16px;background:#f2f2f2;border-radius:12px;padding:10px 12px"><div style="font-size:14px;font-weight:600">Comments ${(v.t.length*13)%800+90}</div><div style="display:flex;gap:8px;align-items:center;margin-top:6px">${avatar({name:'x'+yt.v,id:yt.v},24)}<span style="font-size:13px">${YTC[yt.v%YTC.length]}</span></div></div>
-   ${YTV.filter((_,i)=>i!==yt.v).slice(0,5).map(ytCard).join('')}</div>`;
-  const tick=()=>{clearInterval(yt.t);if(!yt.playing)return;yt.t=setInterval(()=>{if(current!=='youtube'){ytStop();return}yt.pos=Math.min(tot,yt.pos+1);const b=$('#ytBar'),tm=$('#ytTm');b&&(b.style.width=yt.pos/tot*100+'%');tm&&(tm.textContent=fmtDur(yt.pos)+' / '+v.d);if(yt.pos>=tot){yt.v=(yt.v+1)%YTV.length;yt.pos=0;rerender('youtube')}},1000)};
+  const liked=yt.liked[yt.v]===1,disl=yt.liked[yt.v]===-1,subd=!!yt.subs[v.ch],saved=!!(yt.saved||{})[yt.v];
+  const cms=ytComments(yt.v),likes=Math.round(parseFloat(v.v)*(v.v.includes('M')?42:0.042))+(liked?1:0);
+  const ph=yt.full?'calc(100% - 0px)':'243px';
+  const ib='display:flex;align-items:center;justify-content:center;cursor:pointer';
+  el.innerHTML=`<div class="top-pad" style="background:#000;${yt.full?'display:none':''}"></div>
+  <div id="ytP" style="flex:none;height:${ph};position:relative;background:#000;overflow:hidden;cursor:pointer;touch-action:none">
+   <div style="position:absolute;inset:0 0 14px;background:${scene(v.s)};background-size:cover;${yt.playing?'animation:drift 7s ease-in-out infinite alternate':''}"></div>
+   ${yt.cc?`<div style="position:absolute;left:50%;bottom:44px;transform:translateX(-50%);background:rgba(8,8,8,.75);color:#fff;font-size:13px;padding:2px 6px;white-space:nowrap">[music]</div>`:''}
+   <div id="ytOv" style="position:absolute;inset:0 0 14px;background:rgba(0,0,0,.45);transition:opacity .2s;opacity:${yt.playing?0:1};color:#fff">
+    <span data-y="min" style="position:absolute;top:10px;left:12px;${ib}">${yi('down',26,2)}</span>
+    <div style="position:absolute;top:8px;right:12px;display:flex;align-items:center;gap:20px">
+     <span data-y="auto" style="${ib};width:44px;height:22px;border-radius:11px;background:${yt.auto?'#fff':'rgba(255,255,255,.35)'};position:relative"><span style="position:absolute;top:1px;${yt.auto?'right:1px':'left:1px'};width:20px;height:20px;border-radius:50%;background:${yt.auto?'#0f0f0f':'#fff'};color:${yt.auto?'#fff':'#0f0f0f'};${ib}">${yi('play',11)}</span></span>
+     <span style="${ib}">${yi('cast',22)}</span>
+     <span data-y="cc" style="${ib};${yt.cc?'border-bottom:2px solid #ff0033':''}">${yi('cc',22)}</span>
+     <span style="${ib}">${yi('gear',22)}</span></div>
+    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:54px;pointer-events:none">
+     <span data-y="prev" style="${ib};pointer-events:auto;width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.35)">${yi('prev',24)}</span>
+     <span data-y="pp" style="${ib};pointer-events:auto;width:62px;height:62px;border-radius:50%;background:rgba(0,0,0,.35)">${yi(yt.playing?'pause':'play',34)}</span>
+     <span data-y="next" style="${ib};pointer-events:auto;width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.35)">${yi('next',24)}</span></div>
+    <span id="ytTm" style="position:absolute;left:12px;bottom:12px;font-size:13px;font-weight:500">${fmtT(yt.pos)} / ${fmtT(tot)}</span>
+    <span data-y="full" style="position:absolute;right:12px;bottom:8px;${ib}">${yi(yt.full?'unfull':'full',22)}</span>
+   </div>
+   <div id="ytSk" style="position:absolute;left:0;right:0;bottom:0;height:28px;cursor:pointer;touch-action:none">
+    <div style="position:absolute;left:0;right:0;bottom:13px;height:3px;background:rgba(255,255,255,.3)"><i id="ytBuf" style="position:absolute;left:0;top:0;bottom:0;background:rgba(255,255,255,.35);width:${Math.min(100,yt.pos/tot*100+18)}%"></i><i id="ytBar" style="position:absolute;left:0;top:0;bottom:0;background:#ff0033;width:${yt.pos/tot*100}%"></i></div>
+    <i id="ytDot" style="position:absolute;bottom:7px;left:${yt.pos/tot*100}%;width:15px;height:15px;margin-left:-7px;border-radius:50%;background:#ff0033;transition:transform .12s"></i>
+    <span id="ytTip" style="position:absolute;bottom:34px;left:0;transform:translateX(-50%);background:rgba(0,0,0,.8);color:#fff;font-size:13px;font-weight:600;padding:3px 8px;border-radius:6px;display:none">0:00</span>
+   </div>
+  </div>
+  <div class="body" style="${yt.full?'display:none':''}"><div style="padding:12px 14px 4px;font-size:18px;font-weight:700;line-height:1.3">${esc(v.t)}</div>
+   <div style="padding:2px 14px 14px;font-size:12px;color:${YSUB}"><span style="color:#fff;font-weight:600">@${esc(v.ch.replace(/[^A-Za-z]/g,''))}</span>&nbsp; ${likes}K likes &nbsp;${v.v} views &nbsp;${v.ago} &nbsp;<b style="color:#fff">…more</b></div>
+   <div style="display:flex;align-items:center;gap:10px;padding:0 14px 16px">${avatar({name:v.ch,id:v.ch.length},40)}
+    ${subd?`<button data-a="sub" style="background:${YCH};color:#fff;border-radius:20px;padding:8px 12px;display:flex;align-items:center;gap:6px">${yi('bell',20)}${yi('down',16,2)}</button>`:`<button data-a="sub" style="background:#fff;color:#0f0f0f;border-radius:20px;padding:8px 16px;font-size:14px;font-weight:600">Subscribe</button>`}
+    <span style="flex:1"></span>
+    <span data-a="like" style="${ib};padding:4px">${yi(liked?'likeF':'like',27)}</span>
+    <span data-a="dis" style="${ib};padding:4px;transform:rotate(180deg)">${yi(disl?'likeF':'like',27)}</span>
+    <span data-a="share" style="${ib};padding:4px">${yi('share',27)}</span>
+    <span data-a="save" style="${ib};padding:4px">${yi(saved?'saveF':'save',25)}</span>
+    <span style="${ib};padding:4px">${yi('more',25)}</span></div>
+   <div data-a="cms" style="margin:0 14px 16px;background:${YCH};border-radius:12px;padding:12px;cursor:pointer"><div style="font-size:14px;font-weight:700">Comments <span style="color:${YSUB};font-weight:400">${(v.t.length*13)%800+90+cms.filter(c=>c.me).length}</span></div><div style="display:flex;gap:8px;align-items:center;margin-top:8px">${cms[0].me?avatar({name:S.name,id:0},24):avatar({name:cms[0].u.slice(1),id:cms[0].u.length},24)}<span style="font-size:13px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${esc(cms[0].t)}</span></div></div>
+   ${YTV.filter((_,i)=>i!==yt.v).slice(0,5).map(ytCard).join('')}</div>
+  <div id="ytCm" style="position:absolute;left:0;right:0;bottom:0;top:${yt.full?'0':'290px'};background:#212121;border-radius:14px 14px 0 0;display:none;flex-direction:column;z-index:5">
+   <div style="flex:none;display:flex;align-items:center;padding:14px 16px;border-bottom:1px solid #333"><b style="font-size:18px">Comments</b><span data-a="cmx" style="margin-left:auto;cursor:pointer">${yi('x',24)}</span></div>
+   <div id="ytCL" style="flex:1;overflow-y:auto;padding:6px 0"></div>
+   <div style="flex:none;display:flex;align-items:center;gap:10px;padding:10px 14px 34px;border-top:1px solid #333">${avatar({name:S.name,id:0},30)}<input id="ytCI" placeholder="Add a comment…" style="flex:1;background:#3a3a3a;color:#fff;border:0;border-radius:18px;padding:9px 14px;font-size:15px;outline:none"><span data-a="cms2" style="cursor:pointer;opacity:.9">${yi('send',22)}</span></div>
+  </div>`;
+  const ov=$('#ytOv',el),bar=$('#ytBar',el),dot=$('#ytDot',el),tm=$('#ytTm',el),buf=$('#ytBuf',el),tip=$('#ytTip',el);
+  const paint=()=>{const p=yt.pos/tot*100;bar.style.width=p+'%';dot.style.left=p+'%';buf.style.width=Math.min(100,p+18)+'%';tm.textContent=fmtT(yt.pos)+' / '+fmtT(tot)};
+  const showOv=()=>{ov.style.opacity=1;clearTimeout(yt.hide);yt.hide=setTimeout(()=>{if(yt.playing&&!yt.drag)ov.style.opacity=0},2600)};
+  const go=i=>{yt.v=(i+YTV.length)%YTV.length;yt.pos=0;yt.playing=true;musPlay(yt.v%TRACKS.length);ytWatch(el);const b=$('.body',el);b&&(b.scrollTop=0)};
+  const tick=()=>{clearInterval(yt.t);if(!yt.playing)return;yt.t=setInterval(()=>{if(current!=='youtube'){ytStop();return}if(yt.drag)return;yt.pos=Math.min(tot,yt.pos+1);paint();if(yt.pos>=tot){if(yt.auto)go(yt.v+1);else{yt.playing=false;musPause();ytWatch(el)}}},1000)};
   if(yt.playing&&!mus.on)musPlay(yt.v%TRACKS.length);tick();
-  $('#ytP',el).onclick=e=>{if(yt.v===null||current!=='youtube')return;const y=e.target.dataset.y;const ov=$('#ytOv',el);
-    if(y==='pp'||(!y&&!yt.playing)){yt.playing=!yt.playing;if(yt.playing)musPlay(yt.v%TRACKS.length);else musPause();ytWatch(el);return}
-    if(y==='b'){yt.pos=Math.max(0,yt.pos-10)}if(y==='f'){yt.pos=Math.min(tot-1,yt.pos+10)}
-    ov.style.background='rgba(0,0,0,.35)';$$('[data-y]',ov).forEach(s=>s.style.opacity=1);clearTimeout(yt.hide);yt.hide=setTimeout(()=>{if(yt.playing){ov.style.background='rgba(0,0,0,0)';$$('[data-y]',ov).forEach(s=>s.style.opacity=0)}},2200)};
+  /* scrubbing */
+  const sk=$('#ytSk',el);
+  const seek=e=>{const r=sk.getBoundingClientRect();const f=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));yt.pos=Math.round(f*tot);paint();tip.style.display='block';tip.style.left=Math.max(24,Math.min(r.width/SCALE-24,f*r.width/SCALE))+'px';tip.textContent=fmtT(yt.pos)};
+  sk.onpointerdown=e=>{e.stopPropagation();e.preventDefault();yt.drag=true;dot.style.transform='scale(1.35)';ov.style.opacity=1;try{sk.setPointerCapture(e.pointerId)}catch(_){}seek(e)};
+  sk.onpointermove=e=>{if(yt.drag)seek(e)};
+  const end=e=>{if(!yt.drag)return;yt.drag=false;dot.style.transform='';tip.style.display='none';showOv()};
+  sk.onpointerup=end;sk.onpointercancel=end;sk.onclick=e=>e.stopPropagation();
+  $('#ytP',el).onclick=e=>{if(yt.v===null||current!=='youtube')return;const t=e.target.closest('[data-y]');const y=t&&t.dataset.y;
+    if(y==='min'){e.stopPropagation();ytStop();yt.v=null;yt.full=false;renderYoutube(el);return}
+    if(!y){if(+ov.style.opacity===0)showOv();else if(yt.playing){ov.style.opacity=0}return}
+    if(y==='pp'){yt.playing=!yt.playing;if(yt.playing)musPlay(yt.v%TRACKS.length);else musPause();ytWatch(el);if(yt.playing){const o=$('#ytOv',el);o.style.opacity=1;clearTimeout(yt.hide);yt.hide=setTimeout(()=>{if(yt.playing)o.style.opacity=0},1500)}return}
+    if(y==='prev'){if(yt.pos>3){yt.pos=0;paint();showOv()}else go(yt.v-1);return}
+    if(y==='next'){go(yt.v+1);return}
+    if(y==='full'){yt.full=!yt.full;ytWatch(el);return}
+    if(y==='auto'){yt.auto=!yt.auto;ytWatch(el);$('#ytOv',el).style.opacity=1;return}
+    if(y==='cc'){yt.cc=!yt.cc;ytWatch(el);$('#ytOv',el).style.opacity=1;return}
+    showOv()};
+  /* comments sheet */
+  const cmP=$('#ytCm',el),cl=$('#ytCL',el),ci=$('#ytCI',el);
+  const drawC=()=>{cl.innerHTML=cms.map((c,k)=>`<div style="display:flex;gap:10px;padding:10px 16px">${c.me?avatar({name:S.name,id:0},32):avatar({name:c.u.slice(1),id:c.u.length},32)}<div style="flex:1;min-width:0"><div style="font-size:12px;color:${YSUB}">${esc(c.me?'@'+myIG().replace(/\./g,''):c.u)} · ${c.ago}</div><div style="font-size:14px;margin-top:2px;line-height:1.35">${esc(c.t)}</div><div style="display:flex;gap:16px;align-items:center;margin-top:8px;color:#fff;font-size:12px"><span data-cl="${k}" style="display:flex;align-items:center;gap:5px;cursor:pointer">${yi(c.lk?'likeF':'like',16)}${c.l+(c.lk?1:0)||''}</span><span style="transform:rotate(180deg);display:flex">${yi('like',16)}</span>${yi('cmt',16)}</div></div><span style="color:#fff">${yi('vmore',16)}</span></div>`).join('');
+    $$('[data-cl]',cl).forEach(n=>n.onclick=()=>{const c=cms[+n.dataset.cl];c.lk=!c.lk;drawC()})};
+  const openC=()=>{drawC();cmP.style.display='flex'};
+  const post=()=>{const t=ci.value.trim();if(!t)return;cms.unshift({u:'',t,ago:'now',l:0,me:1,lk:false});ci.value='';drawC();cl.scrollTop=0};
+  ci.onkeydown=e=>{if(e.key==='Enter'&&!e.isComposing){e.preventDefault();post()}};
   $$('[data-v]',el).forEach(n=>n.onclick=()=>{yt.v=+n.dataset.v;yt.pos=0;yt.playing=true;musPause();ytWatch(el);$('.body',el).scrollTop=0});
-  bind(el,{min:(n,e)=>{e.stopPropagation();ytStop();yt.v=null;renderYoutube(el)},sub:()=>{yt.subs[v.ch]=!yt.subs[v.ch];if(yt.subs[v.ch])islandFlash('<span>🔔</span>','<span class="ilabel">Subscribed</span>',1000);ytWatch(el)},
-    like:(n,e)=>{if(e.target.dataset.a==='dis'||e.target.closest('[data-a="dis"]')){yt.liked[yt.v]=disl?0:-1}else yt.liked[yt.v]=liked?0:1;ytWatch(el)}});
+  bind(el,{sub:()=>{yt.subs[v.ch]=!yt.subs[v.ch];if(yt.subs[v.ch])islandFlash(`<span style="color:#fff">${yi('bell',16)}</span>`,'<span class="ilabel">Subscribed</span>',1000);ytWatch(el)},
+    like:()=>{yt.liked[yt.v]=liked?0:1;vib(8);ytWatch(el)},dis:()=>{yt.liked[yt.v]=disl?0:-1;vib(8);ytWatch(el)},
+    save:()=>{yt.saved=yt.saved||{};yt.saved[yt.v]=!saved;ytWatch(el)},
+    share:()=>{islandFlash(`<span style="color:#fff">${yi('share',16)}</span>`,'<span class="ilabel">Link copied</span>',1000)},
+    cms:openC,cmx:()=>{cmP.style.display='none';ytWatch(el)},cms2:post});
   setSB(false);
 }
 function ytShorts(el){
-  const S_=[['POV: Verbier at 8am','alpine.lines','2.1M'],['backhand fix in 10s','baselineacademy','880K'],['fitting day 🪡','cutterandthread','430K'],['Serpentine at dawn','kensingtonedit','1.4M'],['rowing in the fog','oarhouse','960K']];
+  const S_=[['POV: Verbier at 8am','alpine.lines','2.1M'],['backhand fix in 10s','baselineacademy','880K'],['fitting day','cutterandthread','430K'],['Serpentine at dawn','kensingtonedit','1.4M'],['rowing in the fog','oarhouse','960K']];
   const s=S_[yt.short%S_.length];yt.shLike=yt.shLike||{};const lk=yt.shLike[yt.short];
   el.style.background='#000';el.style.color='#fff';
+  const ac=(a,icon,label,extra='')=>`<span ${a?`data-a="${a}"`:''} style="cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px"><span style="width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;${extra}">${icon}</span>${label}</span>`;
   el.innerHTML=`<div id="shB" style="position:absolute;inset:0;background:${scene(yt.short*5+3)};background-size:cover;animation:drift 6s ease-in-out infinite alternate"></div><div style="position:absolute;inset:0;background:linear-gradient(transparent 55%,rgba(0,0,0,.6))"></div>
-  <div style="position:absolute;top:60px;left:16px;right:16px;display:flex;justify-content:space-between;font-size:20px"><b>Shorts</b><span>🔍 ⋮</span></div>
-  <div style="position:absolute;right:12px;bottom:130px;display:flex;flex-direction:column;align-items:center;gap:18px;font-size:12px;text-align:center"><span data-a="lk" style="cursor:pointer"><span style="font-size:30px;display:block">${lk?'👍🏻':'👍'}</span>${lk?'Liked':'Like'}</span><span><span style="font-size:28px;display:block">👎</span>Dislike</span><span><span style="font-size:28px;display:block">💬</span>${(yt.short*317)%900+100}</span><span><span style="font-size:28px;display:block">↗</span>Share</span></div>
-  <div style="position:absolute;left:14px;right:80px;bottom:120px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">${avatar({name:s[1],id:s[1].length},32)}<b>@${s[1]}</b><span style="background:#fff;color:#000;border-radius:14px;padding:4px 10px;font-size:13px;font-weight:600">Subscribe</span></div><div style="font-size:15px">${esc(s[0])}</div><div style="font-size:12px;opacity:.8;margin-top:4px">${s[2]} views · ♫ original sound</div></div>
-  <div data-a="next" style="position:absolute;left:50%;bottom:96px;transform:translateX(-50%);font-size:13px;opacity:.85;cursor:pointer;background:rgba(0,0,0,.35);border-radius:14px;padding:5px 12px">swipe up · next ⌃</div>
-  <div style="position:absolute;left:0;right:0;bottom:0;height:84px;padding-bottom:28px;display:flex;justify-content:space-around;align-items:center;background:#0f0f0f">${[['home','⌂','Home'],['shorts','<svg width="1em" height="1em" viewBox="0 0 24 24" style="vertical-align:-.12em;fill:currentColor"><path d="M7 4.5v15l13-7.5z"/></svg>','Shorts'],['plus','⊕',''],['subs','▤','Subscriptions'],['you','◯','You']].map(t=>`<div data-tab="${t[0]}" style="display:flex;flex-direction:column;align-items:center;font-size:10px;cursor:pointer;min-width:60px;${t[0]==='shorts'?'font-weight:700':''}"><span style="font-size:${t[0]==='plus'?32:22}px;line-height:26px">${t[1]}</span>${t[2]}</div>`).join('')}</div>`;
-  $$('[data-tab]',el).forEach(n=>n.onclick=()=>{if(n.dataset.tab==='plus'){openApp('camera');return}yt.tab=n.dataset.tab;el.style.background='#fff';el.style.color='#0f0f0f';renderYoutube(el)});
+  <div style="position:absolute;top:60px;left:16px;right:16px;display:flex;justify-content:space-between;align-items:center;font-size:20px"><b>Shorts</b><span style="display:flex;gap:20px">${yi('search',23)}${yi('vmore',23)}</span></div>
+  <div style="position:absolute;right:10px;bottom:130px;display:flex;flex-direction:column;align-items:center;gap:16px;font-size:12px;text-align:center">${ac('lk',yi(lk?'likeF':'like',26),lk?'Liked':'Like')}${ac('',`<span style="transform:rotate(180deg);display:flex">${yi('like',26)}</span>`,'Dislike')}${ac('',yi('cmt',24),(yt.short*317)%900+100)}${ac('',yi('share',24),'Share')}</div>
+  <div style="position:absolute;left:14px;right:80px;bottom:120px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">${avatar({name:s[1],id:s[1].length},32)}<b>@${s[1]}</b><span style="background:#fff;color:#000;border-radius:14px;padding:4px 10px;font-size:13px;font-weight:600">Subscribe</span></div><div style="font-size:15px">${esc(s[0])}</div><div style="font-size:12px;opacity:.8;margin-top:4px">${s[2]} views · original sound</div></div>
+  <div data-a="next" style="position:absolute;left:50%;bottom:96px;transform:translateX(-50%);font-size:13px;opacity:.85;cursor:pointer;background:rgba(0,0,0,.35);border-radius:14px;padding:5px 12px">swipe up for next</div>
+  <div style="position:absolute;left:0;right:0;bottom:0">${ytNav('shorts')}</div>`;
+  $$('[data-tab]',el).forEach(n=>n.onclick=()=>{if(n.dataset.tab==='plus'){openApp('camera');return}yt.tab=n.dataset.tab;renderYoutube(el)});
   bind(el,{next:()=>{yt.short++;ytShorts(el)},lk:()=>{yt.shLike[yt.short]=!lk;vib(10);ytShorts(el)}});
   let sy=null;const B=$('#shB',el).parentElement;B.onpointerdown=e=>{sy=e.clientY};B.onpointerup=e=>{if(sy!==null&&(e.clientY-sy)/SCALE<-60){yt.short++;ytShorts(el)}else if(sy!==null&&(e.clientY-sy)/SCALE>60&&yt.short>0){yt.short--;ytShorts(el)}sy=null};
   setSB(false);
@@ -2544,7 +2652,7 @@ const APPS={
   contacts:{name:'Contacts',theme:L_,render:(el,o)=>{ph.tab='contacts';if(!o.keep)ph.view=null;renderPhone(el,{standalone:true})}},
   messages:{name:'Messages',theme:L_,render:renderMessages},
   gmail:{name:'Gmail',theme:L_,render:renderGmail},
-  youtube:{name:'YouTube',theme:()=>(yt.v!==null||yt.tab==='shorts')?'dark':'light',render:renderYoutube,close:ytStop},
+  youtube:{name:'YouTube',theme:()=>'dark',render:renderYoutube,close:ytStop},
   chrome:{name:'Chrome',theme:()=>chr.incog?'dark':'light',render:renderChrome},
   whatsapp:{name:'WhatsApp',theme:D_,render:renderWhatsapp},
   facetime:{name:'FaceTime',theme:()=>ft.on?'dark':'light',render:renderFacetime},

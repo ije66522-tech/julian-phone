@@ -80,9 +80,10 @@ window.PHOTOS = {
   /* ---------- 음악 앨범 커버 (곡 순서대로 7개) ----------
      1 Late Train Home / 2 Grey Skies, Gold Light / 3 Camden at 2am / 4 Sunday Roast
      5 Static Hearts / 6 Southbound / 7 Last Orders */
-  music: [
-    // 'img/music/1.jpg',
-  ],
+  music:   music: [
+    'img/music/1.jpg', 'img/music/2.jpg', 'img/music/3.jpg', 'img/music/4.jpg',
+    'img/music/5.jpg', 'img/music/6.jpg', 'img/music/7.jpg',
+  ],ㅍ
 
   /* ---------- 그 외 모든 곳 (유튜브 썸네일, 뉴스, 크롬 등) ----------
      여기 넣으면 남은 기본 그라데이션이 전부 이 사진들로 돌아가며 바뀜 */

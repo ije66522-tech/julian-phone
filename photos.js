@@ -9,7 +9,7 @@
 window.PHOTOS = {
 
   /* ---------- 배경화면 ---------- */
-  wallpaper: '',   // 예: 'img/wallpaper/home.jpg'   (홈 화면)
+  wallpaper: 'img/wallpaper/home.jpg',   // 예: 'img/wallpaper/home.jpg'   (홈 화면)
   lock: '',        // 예: 'img/wallpaper/lock.jpg'   (잠금 화면, 비우면 홈과 같음)
 
   /* ---------- 프로필 사진 (연락처·메시지·인스타·왓츠앱·셋로그 공통) ----------
@@ -28,6 +28,7 @@ window.PHOTOS = {
     'Elena Voss': '',            // 연락처 'Elena Voss (EXIA)'에도 적용됨
     'Rupert Hale': '',
     'Hartley': '',
+    'Adeline Moreau': 'img/profile/adeline.jpg',   // 연인
     // 인스타 아이디별 프사 (안 적으면 이니셜 원)
     'freddie.ash': '',
     'hugo.pemberton': '',
@@ -38,18 +39,25 @@ window.PHOTOS = {
     'sw7.eats': '',
     'verbier.daily': '',
     'albion.air': '',
+    'adeline.moreau': 'img/profile/adeline.jpg',
   },
 
   /* ---------- 사진 앱 (갤러리) ----------
      위에서부터 최신순. 개수 제한 없음 */
   gallery: [
-    // 'img/gallery/01.jpg',
-    // 'img/gallery/02.jpg',
+    'img/gallery/01.jpg',
+    'img/gallery/02.jpg',
+    'img/gallery/03.jpg',
+    'img/gallery/04.jpg',
+    'img/gallery/05.jpg',
   ],
 
   /* ---------- 인스타그램 ---------- */
   igMine: [               // 줄리안 프로필 그리드 (내 게시물)
-    // 'img/instagram/me1.jpg',
+    'img/gallery/02.jpg',
+    'img/gallery/03.jpg',
+    'img/gallery/04.jpg',
+    'img/gallery/05.jpg',
   ],
   igPosts: {              // 피드 게시물 1~9번. 여러 장이면 슬라이드됨
     // 1: ['img/instagram/post1a.jpg', 'img/instagram/post1b.jpg'],
@@ -80,10 +88,16 @@ window.PHOTOS = {
   /* ---------- 음악 앨범 커버 (곡 순서대로 7개) ----------
      1 Late Train Home / 2 Grey Skies, Gold Light / 3 Camden at 2am / 4 Sunday Roast
      5 Static Hearts / 6 Southbound / 7 Last Orders */
-  music:   music: [
+  music: [
     'img/music/1.jpg', 'img/music/2.jpg', 'img/music/3.jpg', 'img/music/4.jpg',
     'img/music/5.jpg', 'img/music/6.jpg', 'img/music/7.jpg',
-  ],ㅍ
+  ],
+
+  /* ---------- 유튜브 영상 (맨 위에 추가됨) ---------- */
+  ytVideos: [
+    { img: 'img/youtube/v1.jpg', title: '태강그룹 금전운 뺏는 주파수', ch: '주파수 채널', d: '3:24', views: '152K', ago: '2 days ago' },
+    { img: 'img/youtube/v2.jpg', title: '빈센트 그레이브스 금전운 뺏는 주파수', ch: '주파수 채널', d: '3:24', views: '98K', ago: '5 days ago' },
+  ],
 
   /* ---------- 그 외 모든 곳 (유튜브 썸네일, 뉴스, 크롬 등) ----------
      여기 넣으면 남은 기본 그라데이션이 전부 이 사진들로 돌아가며 바뀜 */

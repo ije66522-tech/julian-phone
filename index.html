@@ -371,7 +371,7 @@ input[type=range]{accent-color:#007aff}
 <script src="photos.js"></script>
 <script>
 (()=>{
-try{const _sg=JSON.stringify(window.PHOTOS||{});if(localStorage.getItem('iphone18-jsc-ph')!==_sg){localStorage.removeItem('iphone18-jsc-v1');localStorage.setItem('iphone18-jsc-ph',_sg)}}catch(e){}
+try{const _sg='v9'+JSON.stringify(window.PHOTOS||{});if(localStorage.getItem('iphone18-jsc-ph')!==_sg){localStorage.removeItem('iphone18-jsc-v1');localStorage.setItem('iphone18-jsc-ph',_sg)}}catch(e){}
 /* ================= helpers ================= */
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const screen=$('#screen');
@@ -407,16 +407,18 @@ const DEF={
     {id:5,name:'Arabella Whitmore',phone:'07700 900567'},{id:6,name:'Kit Montague',phone:'07700 900678'},
     {id:7,name:'Monty Fairfax',phone:'07700 900789'},{id:8,name:'Lottie Fairfax',phone:'07700 900890'},
     {id:9,name:'Granny',phone:'020 7946 0991'},{id:10,name:'Elena Voss (EXIA)',phone:'020 7946 0123'},
-    {id:11,name:'Rupert Hale (EXIA)',phone:'07700 900912'},{id:12,name:'Hartley (Driver)',phone:'07700 900234'}
+    {id:11,name:'Rupert Hale (EXIA)',phone:'07700 900912'},{id:12,name:'Hartley (Driver)',phone:'07700 900234'},
+    {id:13,name:'Adeline Moreau',phone:'07700 900613'}
   ],
   recents:[{phone:'07700 900101',type:'in',t:Date.now()-5*H},{phone:'07700 900345',type:'out',t:Date.now()-26*H},{phone:'020 7946 0123',type:'missed',t:Date.now()-30*H}],
   events:{},logs:[],
   threads:{
     3:[{me:0,text:'tennis still on for 6? court 3 at the club',t:Date.now()-3*H},{me:1,text:'wouldn\'t miss it. prepare to lose',t:Date.now()-2.9*H},{me:0,text:'bold words from a man with that backhand 🎾',t:Date.now()-2.8*H}],
     1:[{me:0,text:'Darling, supper on Sunday? Granny is coming up x',t:Date.now()-6*H}],
+    13:[{me:0,text:'you left your scarf at mine again',t:Date.now()-9*H},{me:1,text:'on purpose. now you have to see me',t:Date.now()-8.8*H},{me:0,text:'clever. tomorrow then 🤍',t:Date.now()-8.7*H}],
     4:[{me:0,text:'Verbier in Jan? Chalet\'s free the second week',t:Date.now()-28*H},{me:1,text:'Count me in. I\'ll clear it with EXIA',t:Date.now()-27*H}]
   },
-  shots:[],myposts:[],badges:{messages:1,mail:2,gmail:2,whatsapp:3},nextId:13,
+  shots:[],myposts:[],badges:{messages:1,mail:2,gmail:2,whatsapp:3},nextId:14,
   notes:[
     {id:1,text:'Granny\'s birthday\n- flowers from the usual florist\n- table for Sat 1pm\n- ask Hartley about the car',ts:Date.now()-20*H},
     {id:2,text:'Verbier ❄️\nHugo sorting the chalet\nFlights 9 Jan\nSkis need servicing',ts:Date.now()-40*H},
@@ -453,6 +455,7 @@ const DEF={
   ],
   wastatus:[{cid:5,text:'gallery prep 🖼',bg:'#6a4c93',t:Date.now()-2*H},{cid:4,text:'Henley 2027 sorted 🚣',bg:'#1b6ca8',t:Date.now()-5*H},{cid:8,text:'sunday roast >',bg:'#c06014',t:Date.now()-8*H}],
   igdm:[
+    {u:'adeline.moreau',msgs:[{me:0,text:'post the cake one. i look cute in it',t:Date.now()-2*H},{me:1,text:'you have cream on your nose in it',t:Date.now()-1.9*H},{me:0,text:'exactly. cute',t:Date.now()-1.8*H}],unread:0},
     {u:'hugo.pemberton',msgs:[{me:0,text:'saw your story — where was that??',t:Date.now()-40*6e4}],unread:1},
     {u:'arabella.w',msgs:[{me:0,text:'that dinner looked incredible',t:Date.now()-5*H},{me:1,text:'it was. you should\'ve come',t:Date.now()-4.9*H}],unread:0},
     {u:'freddie.ash',msgs:[{me:0,text:'🎾🎾🎾 rematch?',t:Date.now()-26*H}],unread:0},
@@ -929,7 +932,7 @@ function renderCalendar(el){
 }
 
 /* ================= INSTAGRAM ================= */
-const IGU=['freddie.ash','hugo.pemberton','arabella.w','kit.montague','lottie.fairfax','monty_f','sw7.eats','verbier.daily'];
+const IGU=['freddie.ash','hugo.pemberton','arabella.w','kit.montague','lottie.fairfax','monty_f','sw7.eats','verbier.daily','adeline.moreau'];
 const IGREP=['haha 😂','obsessed','where is this??','you\'re ridiculous','ok that\'s actually class','send me the pics','😭😭','lunch this week?','❤️'];
 const IGBG='#0c1014',IGT='#f5f5f5',IGS='#a8a8a8',IGC='#262a30',IGB='#4a5cf0';
 const myIG=()=>S.name.toLowerCase().replace(/[^a-z ]/g,'').trim().replace(/\s+/g,'.');
@@ -1216,7 +1219,7 @@ function slFakeMe(){const a=phArr('setlogMe');const f=slFake(0);if(a.length)f.bg
 function slFake(m){const _c=(D.contacts||[]).find(c=>c.id===m);const _a=_c&&(PHO.setlog||{})[_c.name];const _g=phArr('setlogAny');return{bg:Array.isArray(_a)&&_a.length?phu(rand(_a)):_g.length?phu(rand(_g)):scene(Math.floor(Math.random()*24)),cap:rand(SLCAPS),t:Date.now()-Math.random()*30*6e4,liked:false}}
 function slSeed(){
   const day=dkey(now());
-  if(!D.sl)D.sl={rooms:[{id:1,name:'the boys',emoji:'🥂',members:[3,4,6,7]},{id:2,name:'Family',emoji:'❤️',members:[1,2,9]},{id:3,name:'Arabella & Lottie',emoji:'😍',members:[5,8]},{id:4,name:'EXIA lot',emoji:'🤍',members:[10,11]}],day:null,posts:{},unread:3,last:{}};
+  if(!D.sl)D.sl={rooms:[{id:5,name:'Adeline',emoji:'🤍',members:[13]},{id:1,name:'the boys',emoji:'🥂',members:[3,4,6,7]},{id:2,name:'Family',emoji:'❤️',members:[1,2,9]},{id:3,name:'Arabella & Lottie',emoji:'😍',members:[5,8]},{id:4,name:'EXIA lot',emoji:'🤍',members:[10,11]}],day:null,posts:{},unread:3,last:{}};
   if(D.sl.day!==day){D.sl.day=day;D.sl.posts={};const h=now().getHours();
     D.sl.rooms.forEach(r=>[h-2,h-1,h].forEach((hh,si)=>{if(hh<0)return;const p={};r.members.forEach(m=>{if(Math.random()<(si===2?.35:.75))p[m]=slFake(m)});if(si<2&&Math.random()<.6)p[0]={...slFakeMe(),cap:rand(['me rn','ugh','omw','lol'])};D.sl.posts[r.id+'-'+hh]=p;D.sl.last[r.id]=Date.now()-Math.random()*90*6e4;const ks=Object.keys(p);if(ks.length&&si<2){const pm=+ks[0];const cm=r.members.filter(x=>x!==pm);if(cm.length){const cmm=rand(cm),tx=rand(['fighting!!','omg 😂','so jealous','looks amazing']),tt=p[pm].t+5*6e4;p[pm].cm=[{m:cmm,text:tx,t:tt}];D.sl.chats=D.sl.chats||{};(D.sl.chats['room-'+r.id]=D.sl.chats['room-'+r.id]||[]).push({m:cmm,text:tx,t:tt,ref:{h:hh,pm}})}}}));save()}
 }
@@ -1339,11 +1342,10 @@ function slCamera(el){
       shutterSound();vib(15);const f=$('#flashOv');f.style.transition='none';f.style.opacity=slcam.flash?1:.6;void f.offsetWidth;f.style.transition='opacity .35s';f.style.opacity=0;
       sl.shot=cv.toDataURL('image/jpeg',.72);renderSetlog(el)}});
 }
-function slFriendTick(){
-  setTimeout(()=>{try{slSeed();const hrs=slHours(),h=hrs[hrs.length-1];const r=rand(D.sl.rooms),p=slPosts(r.id,h);const left=r.members.filter(m=>!p[m]);
+function slFriendFire(){
+  {try{slSeed();const hrs=slHours(),h=hrs[hrs.length-1];const r=rand(D.sl.rooms),p=slPosts(r.id,h);const left=r.members.filter(m=>!p[m]);
     if(left.length&&online()){const m=rand(left);p[m]=slFake(m);p[m].t=Date.now();D.sl.last[r.id]=Date.now();(D.sl.feed=D.sl.feed||[]).unshift({m,txt:`${slName(m)} logged in ${r.emoji} ${r.name} · ${pad(h)}:00`,t:Date.now()});D.sl.feed=D.sl.feed.slice(0,30);D.sl.unread++;save();
-      notify({app:'setlog',title:'setlog',body:`${slName(m)} just logged in ${r.emoji} ${r.name} · ${pad(h)}:00 📸`});if(current==='setlog'&&sl.view!=='cam')rerender('setlog')}else{const P=slPosts(r.id,h);const ks=Object.keys(P);if(ks.length&&online()){const pm=+rand(ks);const m=rand(r.members.filter(x=>x!==pm))||r.members[0];slComment(r.id,h,pm,m,rand(SLCMT))}}}catch(e){}slFriendTick()},40000+Math.random()*35000)}
-slFriendTick();
+      notify({app:'setlog',title:'setlog',body:`${slName(m)} just logged in ${r.emoji} ${r.name} · ${pad(h)}:00 📸`});if(current==='setlog'&&sl.view!=='cam')rerender('setlog')}else{const P=slPosts(r.id,h);const ks=Object.keys(P);if(ks.length&&online()){const pm=+rand(ks);const m=rand(r.members.filter(x=>x!==pm))||r.members[0];slComment(r.id,h,pm,m,rand(SLCMT))}}}catch(e){}}}
 /* setlog: long-press menu, chat, DM, settings, delete */
 function slMenu(el,rid,row){
   vib(25);const r=D.sl.rooms.find(x=>x.id===rid);if(!r)return;
@@ -1712,6 +1714,8 @@ const YTV=[
 ];
 const YTC=['honestly the best video on this topic','the editing on this is unreal','watched this three times now','came here after the Verbier one 😂','that ending though','more of this please','underrated channel tbh','the sound design is so good','who else is watching this at 2am','this deserves way more views'];
 const YTCU=['@harrietb','@tomwhittaker','@skiaddict92','@ldnlad','@georgiep','@rowingnerd','@millie.k','@jaspr'];
+(PHO.ytVideos||[]).filter(x=>x&&x.img).reverse().forEach(x=>YTV.unshift({t:x.title||'',ch:x.ch||'',v:x.views||'100K',d:x.d||'3:24',ago:x.ago||'1 day ago',s:0,img:x.img}));
+const ytBg=v=>v.img?phu(v.img):scene(v.s);
 const durS=d=>d.split(':').reduce((a,x)=>a*60+ +x,0);
 const fmtT=s=>{s=Math.floor(s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return h?`${h}:${pad(m)}:${pad(x)}`:`${m}:${pad(x)}`};
 let yt={tab:'home',v:null,pos:0,playing:false,t:null,subs:{'Oarhouse':1,'Alpine Lines':1},liked:{},q:'',searching:false,short:0,hist:[],cm:{},auto:true,cc:false,full:false};
@@ -1758,7 +1762,7 @@ const YP={
 const yi=(n,s=24,w=1.8,extra='')=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" style="display:block;${extra}">${YP[n]}</svg>`;
 const YBG='#0f0f0f',YCH='#272727',YSUB='#aaa';
 function ytStop(){clearInterval(yt.t);if(yt.playing){yt.playing=false;musPause()}}
-function ytThumb(v,h=210){return `<div style="position:relative;height:${h}px;background:${scene(v.s)};background-size:cover"><span style="position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.8);color:#fff;font-size:12px;font-weight:600;border-radius:4px;padding:1px 5px">${v.d}</span></div>`}
+function ytThumb(v,h=210){return `<div style="position:relative;height:${h}px;background:${ytBg(v)};background-size:cover"><span style="position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.8);color:#fff;font-size:12px;font-weight:600;border-radius:4px;padding:1px 5px">${v.d}</span></div>`}
 function ytCard(v){const i=YTV.indexOf(v);return `<div data-v="${i}" style="cursor:pointer;margin-bottom:14px">${ytThumb(v)}<div style="display:flex;gap:12px;padding:10px 12px 0">${avatar({name:v.ch,id:v.ch.length},36)}<div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500;line-height:1.3">${esc(v.t)}</div><div style="font-size:12px;color:${YSUB};margin-top:3px">${esc(v.ch)} · ${v.v} views · ${v.ago}</div></div><span style="color:#fff;flex:none">${yi('vmore',18)}</span></div></div>`}
 function ytNav(active){return `<div style="flex:none;height:84px;padding-bottom:28px;display:flex;justify-content:space-around;align-items:center;border-top:1px solid #222;background:${YBG};color:#fff">${[['home','Home'],['shorts','Shorts'],['plus',''],['subs','Subscriptions'],['you','You']].map(t=>`<div data-tab="${t[0]}" style="display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;cursor:pointer;min-width:60px;${active===t[0]?'font-weight:700':''}">${yi(t[0]==='home'&&active==='home'?'homeF':t[0],t[0]==='plus'?34:24,t[0]==='plus'?1.4:1.8)}${t[2]===undefined?'':''}${t[1]}</div>`).join('')}</div>`}
 function renderYoutube(el){
@@ -1774,7 +1778,7 @@ function renderYoutube(el){
     <div style="padding:6px 12px 10px;font-weight:700;font-size:18px;display:flex;align-items:center;gap:8px">${yi('shorts',22)} Shorts</div><div style="display:flex;gap:8px;padding:0 12px 16px;overflow-x:auto;scrollbar-width:none">${[0,1,2,3].map(i=>`<div data-sh="${i}" style="flex:none;width:170px;height:290px;border-radius:12px;background:${scene(i*5+3)};background-size:cover;position:relative;cursor:pointer"><div style="position:absolute;left:10px;right:10px;bottom:10px;color:#fff;font-size:14px;font-weight:600;text-shadow:0 1px 4px rgba(0,0,0,.6)">${['POV: Verbier at 8am','backhand fix in 10s','fitting day','Serpentine at dawn'][i]}<div style="font-size:12px;font-weight:400">${['2.1M','880K','430K','1.4M'][i]} views</div></div></div>`).join('')}</div>${YTV.slice(3).map(ytCard).join('')}`;
   else if(yt.tab==='subs'){const chs=Object.keys(yt.subs).filter(k=>yt.subs[k]);body=`<div style="display:flex;gap:14px;padding:4px 12px 14px;overflow-x:auto;scrollbar-width:none">${chs.map(c=>`<div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;width:64px;text-align:center">${avatar({name:c,id:c.length},56)}${esc(c)}</div>`).join('')||`<div class="empty" style="padding:10px;color:${YSUB}">Subscribe to channels to see them here</div>`}</div>${YTV.filter(v=>yt.subs[v.ch]).map(ytCard).join('')}`}
   else if(yt.tab==='you'){body=`<div style="display:flex;gap:14px;align-items:center;padding:4px 14px 18px">${avatar({name:S.name,id:0},72)}<div><b style="font-size:22px">${esc(S.name)}</b><div style="font-size:13px;color:${YSUB}">@${myIG().replace(/\./g,'')} · View channel ›</div></div></div>
-    <div style="padding:0 14px 8px;font-weight:700;font-size:18px">History</div><div style="display:flex;gap:10px;padding:0 14px 18px;overflow-x:auto;scrollbar-width:none">${(yt.hist.length?yt.hist:[0,4,7]).map(i=>`<div data-v="${i}" style="flex:none;width:160px;cursor:pointer"><div style="height:90px;border-radius:10px;background:${scene(YTV[i].s)};background-size:cover"></div><div style="font-size:13px;margin-top:6px;line-height:1.3;height:34px;overflow:hidden">${esc(YTV[i].t)}</div></div>`).join('')}</div>
+    <div style="padding:0 14px 8px;font-weight:700;font-size:18px">History</div><div style="display:flex;gap:10px;padding:0 14px 18px;overflow-x:auto;scrollbar-width:none">${(yt.hist.length?yt.hist:[0,4,7]).map(i=>`<div data-v="${i}" style="flex:none;width:160px;cursor:pointer"><div style="height:90px;border-radius:10px;background:${ytBg(YTV[i])};background-size:cover"></div><div style="font-size:13px;margin-top:6px;line-height:1.3;height:34px;overflow:hidden">${esc(YTV[i].t)}</div></div>`).join('')}</div>
     ${[['vids','Your videos'],['dl','Downloads'],['later','Watch later'],['like','Liked videos ('+Object.values(yt.liked).filter(v=>v===1).length+')'],['gear','Settings']].map(r=>`<div style="display:flex;gap:18px;align-items:center;padding:14px 18px;font-size:16px">${yi(r[0],22)}${r[1]}</div>`).join('')}`}
   el.innerHTML=`<div class="top-pad"></div><div style="flex:none;display:flex;align-items:center;gap:10px;padding:4px 14px 10px">${yt.searching?`<span data-a="sx" style="cursor:pointer">${yi('back',24)}</span><input id="ytQ" value="${esc(yt.q)}" placeholder="Search YouTube" style="flex:1;background:${YCH};color:#fff;border:0;border-radius:20px;padding:9px 14px;font-size:16px;outline:none">`:`<b style="font-size:21px;letter-spacing:-.5px">YouTube</b><span style="margin-left:auto;display:flex;gap:22px">${yi('cast',23)}${yi('bell',23)}<span data-a="srch" style="cursor:pointer">${yi('search',23)}</span></span>`}</div>
   <div class="body" id="ytB">${body}</div>${ytNav(yt.tab)}`;
@@ -1796,7 +1800,7 @@ function ytWatch(el){
   const ib='display:flex;align-items:center;justify-content:center;cursor:pointer';
   el.innerHTML=`<div class="top-pad" style="background:#000;${yt.full?'display:none':''}"></div>
   <div id="ytP" style="flex:none;height:${ph};position:relative;background:#000;overflow:hidden;cursor:pointer;touch-action:none">
-   <div style="position:absolute;inset:0 0 14px;background:${scene(v.s)};background-size:cover;${yt.playing?'animation:drift 7s ease-in-out infinite alternate':''}"></div>
+   <div style="position:absolute;inset:0 0 14px;background:${ytBg(v)};background-size:cover;${yt.playing?'animation:drift 7s ease-in-out infinite alternate':''}"></div>
    ${yt.cc?`<div style="position:absolute;left:50%;bottom:44px;transform:translateX(-50%);background:rgba(8,8,8,.75);color:#fff;font-size:13px;padding:2px 6px;white-space:nowrap">[music]</div>`:''}
    <div id="ytOv" style="position:absolute;inset:0 0 14px;background:rgba(0,0,0,.45);transition:opacity .2s;opacity:${yt.playing?0:1};color:#fff">
     <span data-y="min" style="position:absolute;top:10px;left:12px;${ib}">${yi('down',26,2)}</span>
@@ -2795,10 +2799,10 @@ function notify(n){
   clearTimeout(bannerTO);bannerTO=setTimeout(()=>b.classList.remove('show'),4800);
 }
 let bsy=null;$('#banner').addEventListener('pointerdown',e=>{bsy=e.clientY});$('#banner').addEventListener('pointermove',e=>{if(bsy!==null&&e.clientY-bsy<-15){$('#banner').classList.remove('show');bsy=null}});
-function pushRandom(force){
-  const mates=D.contacts.filter(x=>[3,4,5,6,7,8].includes(x.id));const c=rand(mates)||D.contacts[0];const ne=nextEvent();
+function pushRandom(force,kind){
+  const mates=D.contacts.filter(x=>[3,4,5,6,7,8,13,13].includes(x.id));const c=rand(mates)||D.contacts[0];const ne=nextEvent();
   const pool=[
-    ()=>{const t=rand(['drinks at the club later?','darling, did you see that 😂','running 10 mins late','supper Thursday?','are you still at EXIA?','Verbier dates confirmed ❄️','call me when you\'re free','tennis tomorrow?']);(D.threads[c.id]=D.threads[c.id]||[]).push({me:0,text:t,t:Date.now()});save();return{app:'messages',title:c.name,body:t,thread:c.id}},
+    ()=>{const t=c.id===13?rand(['miss you. come over after EXIA?','are you alive','you left your scarf here 🤍','dinner at Osteria Lucia tonight?','call me when you\'re out']):rand(['drinks at the club later?','darling, did you see that 😂','running 10 mins late','supper Thursday?','are you still at EXIA?','Verbier dates confirmed ❄️','call me when you\'re free','tennis tomorrow?']);(D.threads[c.id]=D.threads[c.id]||[]).push({me:0,text:t,t:Date.now()});save();return{app:'messages',title:c.name,body:t,thread:c.id}},
     ()=>({app:'instagram',title:'Instagram',body:rand([rand(IGU)+' liked your post.',rand(IGU)+' started following you.',rand(IGU)+' commented: "absolute scenes 🔥"',rand(IGU)+' added to their story.'])}),
     ()=>ne?{app:'calendar',title:ne.title,body:`Today at ${ne.t}`}:{app:'calendar',title:'Calendar',body:'Check tomorrow\'s events'},
     ()=>({app:'setlog',title:'setlog',body:`It's ${pad(now().getHours())}:00 — time to log! 📸 Your mates are waiting`}),
@@ -2812,9 +2816,16 @@ function pushRandom(force){
     ()=>({app:'news',title:'News',body:rand(NEWS)[0]}),
     ()=>({app:'fitness',title:'Activity',body:'You\'re almost there — a brisk 15-minute walk will close your Move ring.'})
   ];
-  const n=rand(pool)();if(force)n.force=true;notify(n);
+  const CH=[0,7,8],sel=kind==='chat'?CH:kind==='other'?pool.map((_,i)=>i).filter(i=>!CH.includes(i)):pool.map((_,i)=>i);
+  const n=pool[rand(sel)]();if(force)n.force=true;notify(n);
 }
-function scheduleNotifs(){setTimeout(()=>{pushRandom();scheduleNotifs()},30000+Math.random()*30000)}
+const rmin=(a,b)=>(a+Math.random()*(b-a))*60000;
+function scheduleNotifs(){const tk=()=>{const t=Date.now();S.nx=S.nx||{};
+  if(!S.nx.n)S.nx.n=t+rmin(10,20);if(!S.nx.c)S.nx.c=t+rmin(60,180);if(!S.nx.s)S.nx.s=t+60*60000;
+  try{if(t>=S.nx.n){S.nx.n=t+rmin(10,20);pushRandom(false,'other')}}catch(e){}
+  try{if(t>=S.nx.c){S.nx.c=t+rmin(60,180);pushRandom(false,'chat')}}catch(e){}
+  try{if(t>=S.nx.s){S.nx.s=t+60*60000;slFriendFire()}}catch(e){}
+  save()};tk();setInterval(tk,20000)}
 
 /* ================= lock screen ================= */
 let locked=true,screenOff=false;
@@ -2876,7 +2887,7 @@ document.addEventListener('pointerdown',()=>ac(),{once:true});
 /* ================= init ================= */
 applyWall();applyBright();renderSB();renderHome();renderLock();renderCC();updateSB();
 setTimeout(()=>notify({app:'messages',title:'Freddie Ashworth',body:'bold words from a man with that backhand 🎾',thread:3}),2500);
-setTimeout(()=>{if(!S.focus)pushRandom()},14000);
+
 scheduleNotifs();
 })();
 </script>
